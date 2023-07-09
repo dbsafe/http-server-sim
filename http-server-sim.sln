@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32922.545
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerSim.Demo.Tests", "HttpServerSim.Demo.Tests\HttpServerSim.Demo.Tests.csproj", "{0CA0EFBF-5B9A-4C09-AC99-73D4F01B327A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{784E0D78-1625-4DA4-BA35-BBE8A2BF56CD}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerSim.App", "HttpServerSim.App\HttpServerSim.App.csproj", "{725C6AEC-C0A1-44D8-BD87-B06C4B2B4B74}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0CA0EFBF-5B9A-4C09-AC99-73D4F01B327A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CA0EFBF-5B9A-4C09-AC99-73D4F01B327A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CA0EFBF-5B9A-4C09-AC99-73D4F01B327A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CA0EFBF-5B9A-4C09-AC99-73D4F01B327A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{725C6AEC-C0A1-44D8-BD87-B06C4B2B4B74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{725C6AEC-C0A1-44D8-BD87-B06C4B2B4B74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{725C6AEC-C0A1-44D8-BD87-B06C4B2B4B74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{725C6AEC-C0A1-44D8-BD87-B06C4B2B4B74}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C0EFDC7D-5398-4728-BE8E-D61316EB9C3D}
+	EndGlobalSection
+EndGlobal
