@@ -1,0 +1,93 @@
+{
+  "rules": [
+    {
+      "name": "get-employee-from-file",
+      "description": "",
+      "conditions": [
+        {
+          "field": "Method",
+          "operator": "Equals",
+          "value": "GET"
+        },
+        {
+          "field": "Path",
+          "operator": "Contains",
+          "value": "employee-from-file"
+        }
+      ],
+      "response": {
+        "statusCode": 200,
+        "contentType": "application/json",
+        "contentValue": "employee-1.json",
+        "contentValueType": "File"
+      }
+    },
+    {
+      "name": "get-employees-text",
+      "description": "",
+      "conditions": [
+        {
+          "field": "Method",
+          "operator": "Equals",
+          "value": "GET"
+        },
+        {
+          "field": "Path",
+          "operator": "Contains",
+          "value": "employees-as-text"
+        }
+      ],
+      "response": {
+        "statusCode": 200,
+        "contentType": "text/plain",
+        "contentValue": "employee info",
+        "contentValueType": "Text"
+      }
+    },
+    {
+      "name": "get-employees-status-code",
+      "description": "",
+      "conditions": [
+        {
+          "field": "Method",
+          "operator": "Equals",
+          "value": "GET"
+        },
+        {
+          "field": "Path",
+          "operator": "Contains",
+          "value": "employees-status-code"
+        }
+      ],
+      "response": {
+        "statusCode": 404
+      }
+    },
+    {
+      "name": "get-employees",
+      "description": "",
+      "conditions": [
+        {
+          "field": "Method",
+          "operator": "Equals",
+          "value": "GET"
+        }
+      ],
+      "response": {
+        "statusCode": 200,
+        "headers": [
+          {
+            "key": "header-1",
+            "value": [
+              "header-11",
+              "header-12"
+            ]
+          }
+        ],
+        "contentType": "application/json",
+        "contentValue": "{\"Id\":1,\"Name\":\"name-1\"}",
+        "contentValueType": "Text"
+      }
+    }
+  ]
+}
