@@ -4,11 +4,19 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+	<IsPackable>true</IsPackable>
+	<PackAsTool>true</PackAsTool>
+	<ToolCommandName>http-server-sim</ToolCommandName>
+	<PackageOutputPath>./nupkg</PackageOutputPath>
   </PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="FluentAssertions" Version="6.11.0" />
 		<PackageReference Include="System.Text.Json" Version="7.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\HttpServerSim.Client\HttpServerSim.Client.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

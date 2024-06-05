@@ -1,5 +1,6 @@
-﻿// Ignore Spelling: Api app
+﻿// Ignore Spelling: Api app Middleware
 
+using HttpServerSim.Client;
 using HttpServerSim.Contracts;
 using HttpServerSim.Models;
 using Microsoft.Extensions.Primitives;
@@ -8,18 +9,20 @@ using System.Text;
 
 namespace HttpServerSim;
 
-public static class HttpSimRuleResolverExtension
+internal static class HttpSimRuleResolverHelper
 {
-    public static IApplicationBuilder UseHttpSimRuleResolver(this IApplicationBuilder app, IHttpSimRuleResolver httpSimRuleResolver, ILogger logger)
-    {
-        return app.Use(CreateMiddlewareHandleRequest(httpSimRuleResolver, logger));
-    }
-
-    private static Func<HttpContext, RequestDelegate, Task> CreateMiddlewareHandleRequest(IHttpSimRuleResolver httpSimRuleResolver, ILogger logger)
+    /// <summary>
+    /// Creates middleware for finding a rule that matches a request.
+    /// </summary>
+    /// <param name="httpSimRuleResolver"></param>
+    /// <param name="logger"></param>
+    /// <returns></returns>
+    public static Func<HttpContext, RequestDelegate, Task> CreateMiddlewareHandleRequest(IHttpSimRuleResolver httpSimRuleResolver, ILogger logger)
     {
         return async (context, next) =>
         {
-            if (httpSimRuleResolver == null)
+            var isRequestForControlEndpoint = context.Request.Path.ToString().Contains(Routes.CONTROL_ENDPOINT, StringComparison.InvariantCultureIgnoreCase);
+            if (httpSimRuleResolver == null || isRequestForControlEndpoint)
             {
                 await next(context);
                 return;
@@ -36,16 +39,14 @@ public static class HttpSimRuleResolverExtension
             }
 
             logger.LogDebug($"Rule matching the request found. {httpSimRule.Name}");
-            httpSimRule.Callback?.Invoke(httpSimRequest);
-
-            if (httpSimRule.Response == null && httpSimRule.CreateResponseCallback == null)
+            httpSimRule.AddRequest(httpSimRequest);
+            if (httpSimRule.Response == null)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
                 return;
             }
-
-            var response = httpSimRule.Response ?? httpSimRule.CreateResponseCallback!(httpSimRequest);
-            SetHttpResponse(context, response, logger);
+            
+            SetHttpResponse(context, httpSimRule.Response, logger);
         };
     }
 

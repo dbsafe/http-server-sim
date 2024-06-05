@@ -1,5 +1,6 @@
 ﻿// Ignore Spelling: Api app
 
+using HttpServerSim.App.Logger;
 using HttpServerSim.Contracts;
 using HttpServerSim.Models;
 using HttpServerSim.SelfHosted;
@@ -14,7 +15,7 @@ public sealed class ApiHttpSimServer : IDisposable
     private WebApplication? _app;
     private readonly IHttpSimRuleResolver _httpSimRuleResolver;
 
-    private readonly SelfHostedHttpSimRuleStore _ruleStore = new();
+    private readonly HttpSimRuleStore _ruleStore = new();
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new() 
     { 
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
@@ -22,7 +23,7 @@ public sealed class ApiHttpSimServer : IDisposable
 
     public ApiHttpSimServer(string[] args)
     {
-        _httpSimRuleResolver = new SelfHostedHttpSimRuleResolver(_ruleStore);
+        _httpSimRuleResolver = new HttpSimRuleResolver(_ruleStore);
         _app = BuildApplication(args);
 
         var appConfig = LoadAppConfig(args, _app.Logger);
@@ -35,7 +36,7 @@ public sealed class ApiHttpSimServer : IDisposable
     // Allows passing the configuration. Used for testing
     public ApiHttpSimServer(HttpServerConfig config)
     {
-        _httpSimRuleResolver = new SelfHostedHttpSimRuleResolver(_ruleStore);
+        _httpSimRuleResolver = new HttpSimRuleResolver(_ruleStore);
         _app = BuildApplication(config.Args);
 
         _app.Urls.Add(config.Url);
@@ -45,6 +46,8 @@ public sealed class ApiHttpSimServer : IDisposable
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Logging.ClearProviders();
+        builder.Logging.AddCustomColorFormatter(options => {});
+
         builder.Logging.AddConsole();
 
         builder.Services.AddHttpLogging(logging =>
@@ -53,14 +56,14 @@ public sealed class ApiHttpSimServer : IDisposable
             //logging.LoggingFields = HttpLoggingFields.All;
             logging.RequestBodyLogLimit = 4096;
             logging.ResponseBodyLogLimit = 4096;
+            //logging.CombineLogs = true;
         });
 
         builder.Services.AddHttpLoggingInterceptor<HttpLoggingInterceptor>();
 
         var app = builder.Build();
         app.UseHttpLogging();
-
-        app.MapGet("/control-endpoint", () => "This is the control endpoint");
+        app.MapControlEndpoints(_ruleStore, builder.Environment.ContentRootPath, app.Logger);
         app.UseHttpSimRuleResolver(_httpSimRuleResolver, app.Logger);
         return app;
     }

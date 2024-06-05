@@ -40,6 +40,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HttpServerSim.App\HttpServerSim.App.csproj" />
+    <ProjectReference Include="..\HttpServerSim.Client\HttpServerSim.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup>

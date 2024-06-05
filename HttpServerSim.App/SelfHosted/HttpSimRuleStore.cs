@@ -1,16 +1,18 @@
 ﻿using HttpServerSim.Contracts;
-using HttpServerSim.Models;
 using HttpServerSim.Services;
 
 namespace HttpServerSim.SelfHosted;
 
-public class SelfHostedHttpSimRuleStore : IHttpSimRuleStore
+/// <summary>
+/// Rule store
+/// </summary>
+public class HttpSimRuleStore : IHttpSimRuleStore
 {
     private readonly object _lock = new();
 
-    private readonly Dictionary<string, HttpSimRule> _rules = [];
+    private readonly Dictionary<string, IHttpSimRule> _rules = [];
 
-    public IEnumerable<HttpSimRule> GetRules()
+    public IEnumerable<IHttpSimRule> GetRules()
     {
         lock (_lock)
         {
@@ -30,6 +32,14 @@ public class SelfHostedHttpSimRuleStore : IHttpSimRuleStore
             var ruleBuilder = new HttpSimRuleBuilder(name);
             _rules.Add(name, ruleBuilder.Rule);
             return ruleBuilder;
+        }
+    }
+
+    public void Clear()
+    {
+        lock (_lock)
+        {
+            _rules.Clear();
         }
     }
 }

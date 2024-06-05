@@ -1,8 +1,12 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace HttpServerSim.Models
 {
-    public class HttpSimMessage
+    /// <summary>
+    /// Defines a base HTTP message
+    /// </summary>
+    public abstract class HttpSimMessage
     {
         public KeyValuePair<string, string[]>[]? Headers { get; set; }
         public string? ContentValue { get; set; }
@@ -10,7 +14,7 @@ namespace HttpServerSim.Models
         public string? ContentType { get; set; }
     }
 
-    [JsonConverter(typeof(JsonStringEnumConverter<ContentValueType>))]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum ContentValueType
     {
         Text,

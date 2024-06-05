@@ -3,11 +3,15 @@ using HttpServerSim.Models;
 
 namespace HttpServerSim.SelfHosted;
 
-public class SelfHostedHttpSimRuleResolver(IHttpSimRuleStore ruleStore) : IHttpSimRuleResolver
+/// <summary>
+/// Finds a rule that applies to a HTTP request
+/// </summary>
+/// <param name="ruleStore"></param>
+public class HttpSimRuleResolver(IHttpSimRuleStore ruleStore) : IHttpSimRuleResolver
 {
     private readonly IHttpSimRuleStore _ruleStore = ruleStore;
 
-    public HttpSimRule? Resolve(HttpSimRequest request)
+    public IHttpSimRule? Resolve(HttpSimRequest request)
     {
         var rule = _ruleStore.GetRules().FirstOrDefault(r => r.RuleEvaluationFunc(request));
         return rule ?? default;

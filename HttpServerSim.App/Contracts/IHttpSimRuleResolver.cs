@@ -2,7 +2,10 @@
 
 namespace HttpServerSim.Contracts;
 
+/// <summary>
+/// Defines a contract that finds a rule that applies to a HTTP request
+/// </summary>
 public interface IHttpSimRuleResolver
 {
-    HttpSimRule? Resolve(HttpSimRequest request);
+    IHttpSimRule? Resolve(HttpSimRequest request);
 }
