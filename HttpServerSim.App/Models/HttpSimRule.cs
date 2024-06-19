@@ -1,10 +1,17 @@
-﻿namespace HttpServerSim.Models;
+﻿using HttpServerSim.Contracts;
 
-public class HttpSimRule(string name)
+namespace HttpServerSim.Models;
+
+/// <summary>
+/// Rule in the server
+/// </summary>
+/// <param name="name"></param>
+public class HttpSimRule(string name) : IHttpSimRule
 {
-    internal static readonly Func<HttpSimRequest, bool> UnspecifiedRuleEvaluationFunc = _ => false;
+    public static readonly Func<HttpSimRequest, bool> UnspecifiedRuleEvaluationFunc = _ => false;
 
-    internal long _matchCount;
+    private long _matchCount;
+    private readonly List<HttpSimRequest> _requests = [];
     private Func<HttpSimRequest, bool> _ruleEvaluationFunc = UnspecifiedRuleEvaluationFunc;
 
     public string Name { get; } = name;
@@ -16,8 +23,9 @@ public class HttpSimRule(string name)
         get => _ruleEvaluationFunc;
         set => _ruleEvaluationFunc = value;
     }
-    public int RuleUsedCount
-    {
-        get => (int)Interlocked.Read(ref _matchCount);
-    }
+
+    public int MatchCount => (int)Interlocked.Read(ref _matchCount);
+    public IEnumerable<HttpSimRequest> Requests => _requests;
+    public void IncMatchCount() => Interlocked.Increment(ref _matchCount);
+    public void AddRequest(HttpSimRequest request) => _requests.Add(request);
 }
