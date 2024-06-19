@@ -9,7 +9,7 @@
     },
     "Selfhost with Test files": {
       "commandName": "Project",
-      "workingDirectory": "D:\\Repos\\http-server-sim\\HttpServerSim.Demo.Tests\\TestFiles",
+      "workingDirectory": "..\\HttpServerSim.Demo.Tests\\TestFiles",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

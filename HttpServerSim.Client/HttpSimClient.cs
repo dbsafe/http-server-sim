@@ -16,10 +16,10 @@ using System.Threading.Tasks;
 
 namespace HttpServerSim.Client;
 
-public class HttpSimClient(string url)
+public class HttpSimClient(string controlUrl)
 {
     public static HttpClient _httpClient = HttpClientFactory.CreateHttpClient(nameof(HttpSimClient));
-    private readonly string url = url;
+    private readonly string _controlUrl = controlUrl;
     private static readonly JsonSerializerOptions _serializerOptions = new()
     {
         PropertyNameCaseInsensitive = true
@@ -27,14 +27,14 @@ public class HttpSimClient(string url)
 
     public void ClearRules()
     {
-        var response = _httpClient.DeleteAsync($"{url}{Routes.RULES}").Result;
+        var response = _httpClient.DeleteAsync($"{_controlUrl}{Routes.RULES}").Result;
         response.EnsureSuccessStatusCode();
         EnsureOperationResultSuccess<OperationResult>(response);
     }
 
     public void AddRules(ConfigRule[] rules)
     {
-        var response = _httpClient.PostAsJsonAsync($"{url}{Routes.RULES}", rules, _serializerOptions).Result;
+        var response = _httpClient.PostAsJsonAsync($"{_controlUrl}{Routes.RULES}", rules, _serializerOptions).Result;
         response.EnsureSuccessStatusCode();
         EnsureOperationResultSuccess<OperationResult>(response);
     }
@@ -53,7 +53,7 @@ public class HttpSimClient(string url)
     public void VerifyLastRequestBodyAsJson(string ruleName, string expectedBody)
     {
         var path = $"{Routes.RULES}/{ruleName}{Routes.REQUESTS}";
-        var response = _httpClient.GetAsync($"{url}{path}").Result;
+        var response = _httpClient.GetAsync($"{_controlUrl}{path}").Result;
         response.EnsureSuccessStatusCode();
         var operationResult = EnsureOperationResultSuccess<OperationResult<IEnumerable<HttpSimRequest>>>(response);
         var lastRequest = operationResult.Data.LastOrDefault();
@@ -90,7 +90,7 @@ public class HttpSimClient(string url)
     private int GetRuleHits(string ruleName)
     {
         var path = $"{Routes.RULES}/{ruleName}{Routes.HITS}";
-        var response = _httpClient.GetAsync($"{url}{path}").Result;
+        var response = _httpClient.GetAsync($"{_controlUrl}{path}").Result;
         response.EnsureSuccessStatusCode();
         var operationResult = EnsureOperationResultSuccess<OperationResult<int>>(response);
         return operationResult.Data;

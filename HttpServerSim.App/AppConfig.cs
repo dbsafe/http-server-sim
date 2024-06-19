@@ -2,48 +2,66 @@
 
 using System.Configuration;
 using System.Reflection;
-using System.Text;
+using System.Text.Json;
 
 namespace HttpServerSim;
 
 public class AppConfig
 {
+    private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    {
+        WriteIndented = true
+    };
+
     public string? RulesPath { get; set; }
     public string? Url { get; set; }
+    public string? ControlUrl { get; set; }
+    public bool LogControlRequestAndResponse { get; set; }
 
-    public override string ToString()
-    {
-        StringBuilder sb = new();
-        sb.AppendLine($"{nameof(RulesPath)}: {RulesPath}");
-        sb.AppendLine($"{nameof(Url)}: {Url}");
-
-        return sb.ToString();
-    }
+    public override string ToString() => JsonSerializer.Serialize(this, _jsonSerializerOptions);
 }
 
 public class AppConfigLoader
 {
     private const string CONFIG_APP_NAME = "HttpServerSim";
 
-    public static AppConfig Load(string[] args)
+    public static AppConfig Load(IConfiguration config)
     {
-        ConfigurationBuilder configurationBuilder = new();
-        configurationBuilder.AddJsonFile("appsettings.json");
-        configurationBuilder.AddCommandLine(args);
-        IConfigurationRoot config = configurationBuilder.Build();
-
-        AppConfig appConfig = new()
-        {
-            RulesPath = config[$"{CONFIG_APP_NAME}:{nameof(AppConfig.RulesPath)}"],
-            Url = config[$"{CONFIG_APP_NAME}:{nameof(AppConfig.Url)}"],
-        };
-
+        AppConfig appConfig = config.GetSection(CONFIG_APP_NAME).Get<AppConfig>() ?? throw new ConfigurationErrorsException("Failed to load configuration");
         if (!Validate(appConfig, out string message))
         {
             throw new ConfigurationErrorsException(message);
         }
 
-        return appConfig;
+        appConfig.RulesPath = NormalizePath(appConfig.RulesPath, nameof(appConfig.RulesPath));
+        return appConfig!;
+    }
+
+    private static string NormalizePath(string? path, string configName)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new ConfigurationErrorsException($"Invalid {configName}.");
+        }
+
+        if (File.Exists(path))
+        {
+            return path;
+        }
+
+        var newPath = Path.Combine(Directory.GetCurrentDirectory(), path);
+        if (File.Exists(newPath))
+        {
+            return newPath;
+        }
+
+        newPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, path);
+        if (File.Exists(newPath))
+        {
+            return newPath;
+        }
+
+        throw new ConfigurationErrorsException($"Invalid {configName} '{path}'.");
     }
 
     private static bool Validate(AppConfig appConfig, out string message)
@@ -51,29 +69,6 @@ public class AppConfigLoader
         if (string.IsNullOrWhiteSpace(appConfig.RulesPath))
         {
             message = $"Invalid {nameof(appConfig.RulesPath)}.";
-            return false;
-        }
-
-        if (string.IsNullOrEmpty(Path.GetDirectoryName(appConfig.RulesPath)))
-        {
-            var actualPath = Path.Combine(Directory.GetCurrentDirectory(), appConfig.RulesPath);
-            if (File.Exists(actualPath))
-            {
-                appConfig.RulesPath = actualPath;
-            }
-            else
-            {
-                actualPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, appConfig.RulesPath);
-                if (File.Exists(actualPath))
-                {
-                    appConfig.RulesPath = actualPath;
-                }
-            }
-        }
-
-        if (!File.Exists(appConfig.RulesPath))
-        {
-            message = $"File '{appConfig.RulesPath}' not found.";
             return false;
         }
 

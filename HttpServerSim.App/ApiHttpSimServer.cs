@@ -12,43 +12,69 @@ namespace HttpServerSim;
 
 public sealed class ApiHttpSimServer : IDisposable
 {
-    private WebApplication? _app;
+    private WebApplication? _httpSimApp;
+    private WebApplication? _controlApp;
     private readonly IHttpSimRuleResolver _httpSimRuleResolver;
+    private readonly AppConfig _appConfig;
+    private readonly RulesConfig rulesConfig;
 
     private readonly HttpSimRuleStore _ruleStore = new();
-    private static readonly JsonSerializerOptions _jsonSerializerOptions = new() 
-    { 
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
+    private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
     public ApiHttpSimServer(string[] args)
     {
         _httpSimRuleResolver = new HttpSimRuleResolver(_ruleStore);
-        _app = BuildApplication(args);
+        _httpSimApp = BuildHttpSimApplication(args);
 
-        var appConfig = LoadAppConfig(args, _app.Logger);
-        var rulesConfig = LoadRulesConfig(appConfig);
-        _app.UseRulesConfig(rulesConfig.Rules, Path.GetDirectoryName(appConfig.RulesPath)!, _ruleStore);
+        _appConfig = LoadAppConfig(_httpSimApp.Configuration);
+        rulesConfig = LoadRulesConfig(_appConfig);
 
-        _app.Urls.Add(appConfig.Url!);
+        _httpSimApp.UseRulesConfig(rulesConfig.Rules, Path.GetDirectoryName(_appConfig.RulesPath)!, _ruleStore);
+        _httpSimApp.Urls.Add(_appConfig.Url!);
+
+        // Start control endpoint only when the url is present
+        if (!string.IsNullOrEmpty(_appConfig.ControlUrl))
+        {
+            _controlApp = BuildControlApplication(args);
+            _controlApp.Urls.Add(_appConfig.ControlUrl!);
+        }
     }
 
-    // Allows passing the configuration. Used for testing
-    public ApiHttpSimServer(HttpServerConfig config)
-    {
-        _httpSimRuleResolver = new HttpSimRuleResolver(_ruleStore);
-        _app = BuildApplication(config.Args);
-
-        _app.Urls.Add(config.Url);
-    }
-
-    private WebApplication BuildApplication(string[] args)
+    private WebApplication BuildHttpSimApplication(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Logging.ClearProviders();
-        builder.Logging.AddCustomColorFormatter(options => {});
 
-        builder.Logging.AddConsole();
+        AddCustomColorFormatter(builder, false);
+
+        var app = builder.Build();
+        app.UseHttpLogging();
+        app.UseHttpSimRuleResolver(_httpSimRuleResolver, app.Logger);
+        return app;
+    }
+
+    private WebApplication BuildControlApplication(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+        builder.Logging.ClearProviders();
+
+        if (_appConfig.LogControlRequestAndResponse) AddCustomColorFormatter(builder, true); else builder.Logging.AddConsole();
+
+        var app = builder.Build();
+        if (_appConfig.LogControlRequestAndResponse) app.UseHttpLogging();
+        app.MapControlEndpoints(_ruleStore, builder.Environment.ContentRootPath, app.Logger);
+        return app;
+    }
+
+    private static void AddCustomColorFormatter(WebApplicationBuilder builder, bool isControlEndpoint)
+    {
+        builder.Logging.AddCustomColorFormatter(options =>
+        {
+            options.IsControlEndpoint = isControlEndpoint;
+        });
 
         builder.Services.AddHttpLogging(logging =>
         {
@@ -60,55 +86,63 @@ public sealed class ApiHttpSimServer : IDisposable
         });
 
         builder.Services.AddHttpLoggingInterceptor<HttpLoggingInterceptor>();
-
-        var app = builder.Build();
-        app.UseHttpLogging();
-        app.MapControlEndpoints(_ruleStore, builder.Environment.ContentRootPath, app.Logger);
-        app.UseHttpSimRuleResolver(_httpSimRuleResolver, app.Logger);
-        return app;
     }
 
     public void Dispose()
     {
-        if (_app != null)
+        DisposeWebApplication(_httpSimApp);
+        _httpSimApp = null;
+        DisposeWebApplication(_controlApp);
+        _controlApp = null;
+    }
+
+    private static void DisposeWebApplication(WebApplication? application)
+    {
+        if (application != null)
         {
             Task.Run(async () =>
             {
-                await _app.DisposeAsync();
+                await application.DisposeAsync();
             }).Wait();
-
-            _app = null;
         }
     }
 
     public void Run()
     {
-        _app?.Run();
+        Task[] tasks =
+        [
+            Task.Run(() => _httpSimApp?.Run()),
+            Task.Run(() => _controlApp?.Run())
+        ];
+
+        Task.WaitAll(tasks);
     }
 
     public void Start()
     {
-        _app!.Start();
+        _httpSimApp!.Start();
+        _controlApp?.Start();
     }
 
     public void Stop()
     {
-        _app?.StopAsync().GetAwaiter().GetResult();
+        _httpSimApp?.StopAsync().GetAwaiter().GetResult();
+        _controlApp?.StopAsync().GetAwaiter().GetResult();
     }
 
     public IHttpSimRuleManager CreateRule(string name) => _ruleStore.CreateRule(name);
 
-    private static AppConfig LoadAppConfig(string[] args, ILogger logger)
+    private static AppConfig LoadAppConfig(IConfiguration config)
     {
         try
         {
-            var appConfig = AppConfigLoader.Load(args);
-            logger.LogInformation($"Configuration:{Environment.NewLine}{appConfig}");
+            var appConfig = AppConfigLoader.Load(config);
+            Console.WriteLine($"Configuration:{Environment.NewLine}{appConfig}");
             return appConfig;
         }
         catch (ConfigurationErrorsException)
         {
-            logger.LogError("Failed to load configuration.");
+            Console.WriteLine("Failed to load configuration.");
             throw;
         }
     }

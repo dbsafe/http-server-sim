@@ -22,13 +22,14 @@ public class HttpSimClientTest
     private HttpSimClient _httpSimClient;
     private static readonly string _testFilesLocation = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestFiles");
 
-    private readonly string _url = "http://localhost:8080";
+    private readonly string _simUrl = "http://localhost:8080";
+    private readonly string _controlUrl = "http://localhost:8090";
 
     [TestInitialize]
     public void Initialize()
     {
         Monitor.Enter(_syncObj);
-        _httpSimClient = new HttpSimClient(_url);
+        _httpSimClient = new HttpSimClient(_controlUrl);
         _httpSimClient.ClearRules();
     }
 
@@ -56,7 +57,7 @@ public class HttpSimClientTest
             .Rule;
         _httpSimClient.AddRule(rule);
 
-        var actualHttpResponse = await _httpClient.PostAsJsonAsync($"{_url}/employees", employee);
+        var actualHttpResponse = await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", employee);
 
         AssertResponse(apiResponse, actualHttpResponse);
     }
@@ -76,7 +77,7 @@ public class HttpSimClientTest
             .Rule;
         _httpSimClient.AddRule(rule);
 
-        var actualHttpResponse = await _httpClient.PostAsJsonAsync($"{_url}/employees", employee);
+        var actualHttpResponse = await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", employee);
 
         AssertJsonResponse(employee, actualHttpResponse);
         AssertHeaders(headers, actualHttpResponse.Headers);
@@ -92,7 +93,7 @@ public class HttpSimClientTest
             .Rule;
         _httpSimClient.AddRule(rule);
 
-        var actualHttpResponse = await _httpClient.GetAsync($"{_url}/employees-as-text");
+        var actualHttpResponse = await _httpClient.GetAsync($"{_simUrl}/employees-as-text");
 
         AssertTextResponse("employee info", actualHttpResponse);
     }
@@ -108,7 +109,7 @@ public class HttpSimClientTest
             .Rule;
         _httpSimClient.AddRule(rule);
 
-        var actualHttpResponse = await _httpClient.GetAsync($"{_url}/employee-from-file");
+        var actualHttpResponse = await _httpClient.GetAsync($"{_simUrl}/employee-from-file");
 
         AssertContentType("application/json", actualHttpResponse.Content.Headers);
 
@@ -125,7 +126,7 @@ public class HttpSimClientTest
             .Rule;
         _httpSimClient.AddRule(rule);
 
-        var actualHttpResponse = await _httpClient.GetAsync($"{_url}/employees-status-code");
+        var actualHttpResponse = await _httpClient.GetAsync($"{_simUrl}/employees-status-code");
 
         actualHttpResponse.Should().NotBeNull();
 
@@ -151,10 +152,10 @@ public class HttpSimClientTest
 
         _httpSimClient.AddRules([rule1, rule2]);
 
-        var getHttpResponse = await _httpClient.GetAsync($"{_url}/employees");
+        var getHttpResponse = await _httpClient.GetAsync($"{_simUrl}/employees");
         ((int)getHttpResponse.StatusCode).Should().Be(200);
 
-        var deleteHttpResponse = await _httpClient.DeleteAsync($"{_url}/employees");
+        var deleteHttpResponse = await _httpClient.DeleteAsync($"{_simUrl}/employees");
         ((int)deleteHttpResponse.StatusCode).Should().Be(401);
     }
 
@@ -178,9 +179,9 @@ public class HttpSimClientTest
 
         _httpSimClient.AddRules([getRule, deleteRule, updateRule]);
 
-        await _httpClient.GetAsync($"{_url}/employees");
-        await _httpClient.DeleteAsync($"{_url}/employees");
-        await _httpClient.GetAsync($"{_url}/employees");
+        await _httpClient.GetAsync($"{_simUrl}/employees");
+        await _httpClient.DeleteAsync($"{_simUrl}/employees");
+        await _httpClient.GetAsync($"{_simUrl}/employees");
 
         _httpSimClient.VerifyThatRuleWasUsed(getRule.Name, 2);
         _httpSimClient.VerifyThatRuleWasUsed(deleteRule.Name, 1);
@@ -212,7 +213,7 @@ public class HttpSimClientTest
             .Rule;
         _httpSimClient.AddRule(postRule);
 
-        await _httpClient.PostAsJsonAsync($"{_url}/employees", new { id = 1, name = "name-1" });
+        await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", new { id = 1, name = "name-1" });
 
         var expected = @"{
     ""id"": 1,
@@ -231,7 +232,7 @@ public class HttpSimClientTest
             .Rule;
         _httpSimClient.AddRule(postRule);
 
-        await _httpClient.PostAsJsonAsync($"{_url}/employees", new { id = 1 });
+        await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", new { id = 1 });
 
         var expected = @"{
     ""id"": 2

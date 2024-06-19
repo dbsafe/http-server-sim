@@ -33,12 +33,12 @@ internal static class HttpSimRuleResolverHelper
 
             if (httpSimRule == null)
             {
-                logger.LogWarning("Rule matching the request not found.");
+                logger.LogWarning("Rule matching request not found.");
                 await RuleNotFoundAsync(context);
                 return;
             }
 
-            logger.LogDebug($"Rule matching the request found. {httpSimRule.Name}");
+            logger.LogDebug($"Rule matching request found. '{httpSimRule.Name}'");
             httpSimRule.AddRequest(httpSimRequest);
             if (httpSimRule.Response == null)
             {
