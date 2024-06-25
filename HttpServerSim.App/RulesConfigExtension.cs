@@ -26,7 +26,7 @@ public static class RulesConfigExtension
         }
 
         StringBuilder sb = new();
-        sb.AppendLine("Rules found:");
+        sb.AppendLine("Loading Rules - Found:");
         foreach (var configRule in configRules)
         {
             sb.AppendLine($"\t{configRule.Name}");
@@ -42,7 +42,7 @@ public static class RulesConfigExtension
                 .ReturnHttpResponse(apiResponse);
         }
 
-        logger.LogInformation(sb.ToString());
+        logger.LogDebug(sb.ToString());
     }
 
     private static HttpSimResponse? BuildResponseFromRule(ILogger logger, ConfigRule configRule, string contentDirectory)

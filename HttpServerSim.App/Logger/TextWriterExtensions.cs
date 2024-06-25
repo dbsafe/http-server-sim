@@ -44,6 +44,12 @@ public static class TextWriterExtensions
         }
     }
 
+    public static void WriteLineWithColor(this TextWriter textWriter, string message, ConsoleColor? background, ConsoleColor? foreground)
+    {
+        WriteWithColor(textWriter, message, background, foreground);
+        textWriter.WriteLine();
+    }
+
     static string GetForegroundColorEscapeCode(ConsoleColor color) =>
         color switch
         {
