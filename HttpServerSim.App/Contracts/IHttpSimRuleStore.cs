@@ -1,9 +1,11 @@
-﻿using HttpServerSim.Models;
+﻿namespace HttpServerSim.Contracts;
 
-namespace HttpServerSim.Contracts;
-
+/// <summary>
+/// Defines the contract of a rule store in the server
+/// </summary>
 public interface IHttpSimRuleStore
 {
     IHttpSimRuleManager CreateRule(string name);
-    IEnumerable<HttpSimRule> GetRules();
+    IEnumerable<IHttpSimRule> GetRules();
+    void Clear();
 }

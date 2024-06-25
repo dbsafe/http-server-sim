@@ -6,6 +6,9 @@ using System.Text;
 
 namespace HttpServerSim;
 
+/// <summary>
+/// Defines methods for loading rules in the rule store.
+/// </summary>
 public static class RulesConfigExtension
 {
     public static IApplicationBuilder UseRulesConfig(this WebApplication app, IEnumerable<ConfigRule>? configRules, string contentDirectory, IHttpSimRuleStore ruleStore)
@@ -78,7 +81,7 @@ public static class RulesConfigExtension
 
     private static Func<HttpSimRequest, bool> BuildFuncFromRule(ILogger logger, ConfigRule configRule)
     {
-        if (configRule.Conditions is not null && configRule.Conditions.Length >= 0)
+        if (configRule.Conditions is not null && configRule.Conditions.Count >= 0)
         {
             return BuildFuncFromCondition(logger, configRule.Conditions, configRule.Name);
         }
@@ -87,7 +90,7 @@ public static class RulesConfigExtension
         return (httpSimRequest) => false;
     }
 
-    private static Func<HttpSimRequest, bool> BuildFuncFromCondition(ILogger logger, ConfigCondition[] configConditions, string ruleName)
+    private static Func<HttpSimRequest, bool> BuildFuncFromCondition(ILogger logger, IEnumerable<ConfigCondition> configConditions, string ruleName)
     {
         List<Func<HttpSimRequest, bool>> funcs = [];
         foreach (var configCondition in configConditions)

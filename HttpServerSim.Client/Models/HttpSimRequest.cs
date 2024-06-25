@@ -1,11 +1,15 @@
 ﻿// Ignore Spelling: Json Serializer
 
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace HttpServerSim.Models;
 
+/// <summary>
+/// Defines a HTTP request
+/// </summary>
+/// <param name="method"></param>
+/// <param name="path"></param>
 public class HttpSimRequest(string method, string path) : HttpSimMessage
 {
     private string? _jsonContent;
