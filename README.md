@@ -11,7 +11,7 @@ Builds packages from all projects setting the version in the dll and in the pack
 
 Builds one package for one project:</p>
 `dotnet pack .\HttpServerSim.App\HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.2.0 -p:Version=0.2.0 --output C:\LocalNuget`
-`dotnet pack .\HttpServerSim.App\HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.3.0 -p:Version=0.3.0 --output ./HttpServerSim.App/nupkg`
+`dotnet pack .\HttpServerSim.App\HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.5.0 -p:Version=0.5.0 --output ./HttpServerSim.App/nupkg`
 
 Read more here
 [Source Link](https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/sourcelink)

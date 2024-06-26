@@ -63,7 +63,7 @@
           }
         ],
         "contentType": "application/json",
-        "contentValue": "{\"Id\":1,\"Name\":\"name-1\"}",
+        "contentValue": "[{\"Id\":1,\"Name\":\"name-1\"}]",
         "contentValueType": "Text"
       }
     }

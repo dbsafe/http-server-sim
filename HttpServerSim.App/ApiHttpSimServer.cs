@@ -15,7 +15,6 @@ public sealed class ApiHttpSimServer : IDisposable
     private WebApplication? _httpSimApp;
     private WebApplication? _controlApp;
     private readonly IHttpSimRuleResolver _httpSimRuleResolver;
-    private readonly AppConfig _appConfig;
     private readonly RulesConfig rulesConfig;
 
     private readonly HttpSimRuleStore _ruleStore = new();
@@ -27,46 +26,46 @@ public sealed class ApiHttpSimServer : IDisposable
     public ApiHttpSimServer(string[] args)
     {
         _httpSimRuleResolver = new HttpSimRuleResolver(_ruleStore);
-        _httpSimApp = BuildHttpSimApplication(args);
+        (_httpSimApp, var appConfig) = BuildHttpSimApplication(args, isControlEndpoint: false, appConfig => appConfig.LogRequestAndResponse);
+        _httpSimApp.UseHttpSimRuleResolver(_httpSimRuleResolver, _httpSimApp.Logger);
+        rulesConfig = LoadRulesConfig(appConfig);
 
-        _appConfig = LoadAppConfig(_httpSimApp.Configuration);
-        rulesConfig = LoadRulesConfig(_appConfig);
-
-        _httpSimApp.UseRulesConfig(rulesConfig.Rules, Path.GetDirectoryName(_appConfig.RulesPath)!, _ruleStore);
-        _httpSimApp.Urls.Add(_appConfig.Url!);
+        _httpSimApp.UseRulesConfig(rulesConfig.Rules, Path.GetDirectoryName(appConfig.RulesPath)!, _ruleStore);
+        _httpSimApp.Urls.Add(appConfig.Url!);
 
         // Start control endpoint only when the url is present
-        if (!string.IsNullOrEmpty(_appConfig.ControlUrl))
+        if (!string.IsNullOrEmpty(appConfig.ControlUrl))
         {
-            _controlApp = BuildControlApplication(args);
-            _controlApp.Urls.Add(_appConfig.ControlUrl!);
+            (_controlApp, _) = BuildHttpSimApplication(args, isControlEndpoint: true, appConfig => appConfig.LogControlRequestAndResponse);
+            _controlApp.MapControlEndpoints(_ruleStore, _controlApp.Environment.ContentRootPath, _controlApp.Logger);
+            _controlApp.Urls.Add(appConfig.ControlUrl!);
         }
     }
 
-    private WebApplication BuildHttpSimApplication(string[] args)
+    private (WebApplication, AppConfig) BuildHttpSimApplication(string[] args, bool isControlEndpoint, Func<AppConfig, bool> getLogRequestAndResponse)
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Logging.ClearProviders();
 
-        AddCustomColorFormatter(builder, false);
+        var appConfig = LoadAppConfig(builder.Configuration);
+
+        if (getLogRequestAndResponse.Invoke(appConfig))
+
+        {
+            AddCustomColorFormatter(builder, isControlEndpoint);
+        }
+        else
+        {
+            builder.Logging.AddConsole();
+        }
 
         var app = builder.Build();
-        app.UseHttpLogging();
-        app.UseHttpSimRuleResolver(_httpSimRuleResolver, app.Logger);
-        return app;
-    }
-
-    private WebApplication BuildControlApplication(string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args);
-        builder.Logging.ClearProviders();
-
-        if (_appConfig.LogControlRequestAndResponse) AddCustomColorFormatter(builder, true); else builder.Logging.AddConsole();
-
-        var app = builder.Build();
-        if (_appConfig.LogControlRequestAndResponse) app.UseHttpLogging();
-        app.MapControlEndpoints(_ruleStore, builder.Environment.ContentRootPath, app.Logger);
-        return app;
+        if (getLogRequestAndResponse.Invoke(appConfig))
+        {
+            app.UseHttpLogging();
+        }
+        
+        return (app, appConfig);
     }
 
     private static void AddCustomColorFormatter(WebApplicationBuilder builder, bool isControlEndpoint)
@@ -158,29 +157,6 @@ public sealed class ApiHttpSimServer : IDisposable
         {
             Console.WriteLine("Failed to load rules.");
             throw;
-        }
-    }
-}
-
-public sealed class HttpLoggingInterceptor : IHttpLoggingInterceptor
-{
-    public ValueTask OnRequestAsync(HttpLoggingInterceptorContext logContext)
-    {
-        AddHeaders(logContext);
-        return default;
-    }
-
-    public ValueTask OnResponseAsync(HttpLoggingInterceptorContext logContext)
-    {
-        AddHeaders(logContext);
-        return default;
-    }
-
-    private static void AddHeaders(HttpLoggingInterceptorContext logContext)
-    {
-        foreach (var header in logContext.HttpContext.Response.Headers)
-        {
-            logContext.AddParameter(header.Key, header.Value);
         }
     }
 }
