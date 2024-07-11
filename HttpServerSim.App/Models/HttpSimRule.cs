@@ -16,8 +16,7 @@ public class HttpSimRule(string name) : IHttpSimRule
 
     public string Name { get; } = name;
     public HttpSimResponse? Response { get; set; }
-    public Func<HttpSimRequest, HttpSimResponse>? CreateResponseCallback { get; set; }
-    public Action<HttpSimRequest>? Callback { get; set; }
+
     public Func<HttpSimRequest, bool> RuleEvaluationFunc
     {
         get => _ruleEvaluationFunc;
@@ -26,6 +25,9 @@ public class HttpSimRule(string name) : IHttpSimRule
 
     public int MatchCount => (int)Interlocked.Read(ref _matchCount);
     public IEnumerable<HttpSimRequest> Requests => _requests;
+
+    public List<ConfigCondition>? Conditions { get; set; }
+
     public void IncMatchCount() => Interlocked.Increment(ref _matchCount);
     public void AddRequest(HttpSimRequest request) => _requests.Add(request);
 }

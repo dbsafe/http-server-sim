@@ -42,9 +42,21 @@ public sealed class ApiHttpSimServer : IDisposable
         }
     }
 
-    private static (WebApplication, AppConfig) BuildHttpSimApplication(string[] args, bool isControlEndpoint, Func<AppConfig, bool> getLogRequestAndResponse, AppConfig? appConfig = null)
+    private static (WebApplication, AppConfig) BuildHttpSimApplication(
+        string[] args, 
+        bool isControlEndpoint, 
+        Func<AppConfig, bool> getLogRequestAndResponse, 
+        AppConfig? appConfig = null)
     {
         var builder = WebApplication.CreateBuilder(args);
+        if (isControlEndpoint)
+        {
+            builder.Services.ConfigureHttpJsonOptions(options =>
+            {
+                options.SerializerOptions.WriteIndented = true;
+            });
+        }
+        
         builder.Logging.ClearProviders();
 
         // Avoid loading appConfig twice
