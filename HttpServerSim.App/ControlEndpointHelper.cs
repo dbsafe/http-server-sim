@@ -18,57 +18,67 @@ internal static class ControlEndpointHelper
     {
         ArgumentNullException.ThrowIfNull(app);
 
+        app.MapGet(Routes.RULES, () =>
+        {
+            return ExecuteProtected(logger, () =>
+            {
+                var rules = ruleStore.GetRules().ToArray();
+                return OperationResult.CreateSuccess(rules);
+            });
+        });
+
+        app.MapGet(Routes.RULE, ([FromRoute] string name) =>
+        {
+            return ExecuteProtected(logger, () =>
+            {
+                var rule = ruleStore.GetRules().FirstOrDefault(r => r.Name == name);
+                if (rule is null)
+                {
+                    return OperationResult.CreateFailure($"Rule with name '{name}' not found");
+                }
+                else
+                {
+                    return OperationResult.CreateSuccess(rule);
+                }
+            });
+        });
+
         app.MapPost(Routes.RULES, ([FromBody] ConfigRule[] rules) =>
         {
-            try
+            return ExecuteProtected(logger, () =>
             {
                 RulesConfigExtension.LoadRules(rules, contentRoot, ruleStore, logger);
                 logger.LogDebug($"Created rules '{string.Join(',', rules.Select(r => r.Name))}'");
                 return OperationResult.CreateSuccess();
-            }
-            catch (Exception ex)
-            {
-                logger.LogDebug(ex.ToString());
-                return OperationResult.CreateFailure(ex.Message);
-            }
+            });
         });
 
         app.MapDelete(Routes.RULES, () =>
         {
-            try
+            return ExecuteProtected(logger, () =>
             {
                 ruleStore.Clear();
                 logger.LogDebug("Rules deleted");
                 return OperationResult.CreateSuccess();
-            }
-            catch (Exception ex)
-            {
-                logger.LogDebug(ex.ToString());
-                return OperationResult.CreateFailure(ex.Message);
-            }
+            });
         });
 
         app.MapGet(Routes.RULE_HITS, ([FromRoute] string name) =>
         {
-            try
+            return ExecuteProtected(logger, () =>
             {
                 if (!TryGetRule(ruleStore, name, out IHttpSimRule? rule))
                 {
                     return OperationResult.CreateFailure($"Rule '{name}' not found.");
                 }
-                
+
                 return OperationResult.CreateSuccess(rule.MatchCount);
-            }
-            catch (Exception ex)
-            {
-                logger.LogDebug(ex.ToString());
-                return OperationResult.CreateFailure(ex.Message);
-            }
+            });
         });
 
         app.MapGet(Routes.RULE_REQUESTS, ([FromRoute] string name) =>
         {
-            try
+            return ExecuteProtected(logger, () =>
             {
                 if (!TryGetRule(ruleStore, name, out IHttpSimRule? rule))
                 {
@@ -76,15 +86,23 @@ internal static class ControlEndpointHelper
                 }
 
                 return OperationResult.CreateSuccess(rule.Requests);
-            }
-            catch (Exception ex)
-            {
-                logger.LogDebug(ex.ToString());
-                return OperationResult.CreateFailure(ex.Message);
-            }
+            });
         });
 
         return app;
+    }
+
+    private static OperationResult ExecuteProtected(ILogger logger, Func<OperationResult> func)
+    {
+        try
+        {
+            return func();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex.ToString());
+            return OperationResult.CreateFailure(ex.Message);
+        }
     }
 
     private static bool TryGetRule(IHttpSimRuleStore ruleStore, string name, [MaybeNullWhen(false)] out IHttpSimRule rule)

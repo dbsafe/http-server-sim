@@ -37,9 +37,10 @@ public static class RulesConfigExtension
                 continue;
             }
 
-            ruleStore.CreateRule(configRule.Name)
+            var ruleManager = ruleStore.CreateRule(configRule.Name)
                 .When(BuildFuncFromRule(logger, configRule))
                 .ReturnHttpResponse(apiResponse);
+            ruleManager.Rule.Conditions = configRule.Conditions;
         }
 
         logger.LogDebug(sb.ToString());

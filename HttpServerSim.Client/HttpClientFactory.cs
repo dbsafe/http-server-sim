@@ -1,14 +1,20 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace HttpServerSim.Client;
 
 public static class HttpClientFactory
 {
     public static HttpClient CreateHttpClient(string name) => new(new LoggingHandler(name, new HttpClientHandler()));
+    public static HttpClient CreateHttpClient(string name, DecompressionMethods decompressionMethods)
+    {
+        var httpClientHandler = new HttpClientHandler { AutomaticDecompression = decompressionMethods };
+        return new(new LoggingHandler(name, httpClientHandler));
+    }
 }
 
 public class LoggingHandler(string name, HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
@@ -20,12 +26,7 @@ public class LoggingHandler(string name, HttpMessageHandler innerHandler) : Dele
         var sb = new StringBuilder();
         sb.AppendLine("Request:");
         sb.AppendLine(request.ToString());
-        if (request.Content != null)
-        {
-            sb.Append("Body:");
-            sb.AppendLine(await request.Content.ReadAsStringAsync());
-        }
-
+        await LogContentAsync(request.Content, sb);
         Console.WriteLine($"{name}{Environment.NewLine}{sb}");
         sb.Clear();
 
@@ -33,14 +34,18 @@ public class LoggingHandler(string name, HttpMessageHandler innerHandler) : Dele
 
         sb.AppendLine("Response:");
         sb.AppendLine(response.ToString());
-        if (response.Content != null)
-        {
-            sb.Append("Body:");
-            sb.AppendLine(await response.Content.ReadAsStringAsync());
-        }
-
+        await LogContentAsync(response.Content, sb);
         Console.WriteLine($"{name}{Environment.NewLine}{sb}");
 
         return response;
+    }
+
+    private async Task LogContentAsync(HttpContent? content, StringBuilder sb)
+    {
+        if (content != null)
+        {
+            sb.Append("Body:");
+            sb.AppendLine(await content.ReadAsStringAsync());
+        }
     }
 }

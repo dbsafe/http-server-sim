@@ -36,18 +36,31 @@ public sealed class ApiHttpSimServer : IDisposable
         // Start control endpoint only when the url is present
         if (!string.IsNullOrEmpty(appConfig.ControlUrl))
         {
-            (_controlApp, _) = BuildHttpSimApplication(args, isControlEndpoint: true, appConfig => appConfig.LogControlRequestAndResponse);
+            (_controlApp, _) = BuildHttpSimApplication(args, isControlEndpoint: true, appConfig => appConfig.LogControlRequestAndResponse, appConfig);
             _controlApp.MapControlEndpoints(_ruleStore, _controlApp.Environment.ContentRootPath, _controlApp.Logger);
             _controlApp.Urls.Add(appConfig.ControlUrl!);
         }
     }
 
-    private (WebApplication, AppConfig) BuildHttpSimApplication(string[] args, bool isControlEndpoint, Func<AppConfig, bool> getLogRequestAndResponse)
+    private static (WebApplication, AppConfig) BuildHttpSimApplication(
+        string[] args, 
+        bool isControlEndpoint, 
+        Func<AppConfig, bool> getLogRequestAndResponse, 
+        AppConfig? appConfig = null)
     {
         var builder = WebApplication.CreateBuilder(args);
+        if (isControlEndpoint)
+        {
+            builder.Services.ConfigureHttpJsonOptions(options =>
+            {
+                options.SerializerOptions.WriteIndented = true;
+            });
+        }
+        
         builder.Logging.ClearProviders();
 
-        var appConfig = LoadAppConfig(builder.Configuration);
+        // Avoid loading appConfig twice
+        appConfig ??= LoadAppConfig(builder.Configuration);
 
         if (getLogRequestAndResponse.Invoke(appConfig))
 
