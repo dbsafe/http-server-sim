@@ -48,15 +48,15 @@ public static class RuleBuilderExtensionMethods
         return ruleBuilder;
     }
 
-    public static RuleBuilder WithJsonResponse<TBody>(this RuleBuilder ruleBuilder, TBody content, string contentType = "application/json", KeyValuePair<string, string[]>[]? headers = null, int statusCode = 200)
+    public static RuleBuilder WithJsonResponse<TBody>(this RuleBuilder ruleBuilder, TBody content, string contentType = "application/json", KeyValuePair<string, string[]>[]? headers = null, int statusCode = 200, HttpSimResponseEncoding encoding = HttpSimResponseEncoding.None)
     {
         var jsonContent = JsonSerializer.Serialize(content);
-        return WithTextResponse(ruleBuilder, jsonContent, contentType, headers, statusCode);
+        return WithTextResponse(ruleBuilder, jsonContent, contentType, headers, statusCode, encoding);
     }
 
-    public static RuleBuilder WithTextResponse(this RuleBuilder ruleBuilder, string content, string contentType = "text/plain", KeyValuePair<string, string[]>[]? headers = null, int statusCode = 200)
+    public static RuleBuilder WithTextResponse(this RuleBuilder ruleBuilder, string content, string contentType = "text/plain", KeyValuePair<string, string[]>[]? headers = null, int statusCode = 200, HttpSimResponseEncoding encoding = HttpSimResponseEncoding.None)
     {
-        var response = new HttpSimResponse { StatusCode = statusCode, ContentValue = content, ContentType = contentType, Headers = headers };
+        var response = new HttpSimResponse { StatusCode = statusCode, ContentValue = content, ContentType = contentType, Headers = headers, Encoding = encoding };
         return WithResponse(ruleBuilder, response);
     }
 

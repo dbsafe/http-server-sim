@@ -7,11 +7,11 @@ Builds packages from all projects:</p>
 `dotnet pack --include-source --include-symbols --no-build`
 
 Builds packages from all projects setting the version in the dll and in the package:</p>
-`dotnet pack --include-source --include-symbols -p:PackageVersion=0.2.0 -p:Version=0.2.0 --output D:\LocalNuget`
+`dotnet pack --include-source --include-symbols -p:PackageVersion=0.6.0 -p:Version=0.6.0 --output D:\LocalNuget`
 
 Builds one package for one project:</p>
 `dotnet pack .\HttpServerSim.App\HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.2.0 -p:Version=0.2.0 --output C:\LocalNuget`
-`dotnet pack .\HttpServerSim.App\HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.5.0 -p:Version=0.5.0 --output ./HttpServerSim.App/nupkg`
+`dotnet pack .\HttpServerSim.App\HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.8.0 -p:Version=0.8.0 --output ./HttpServerSim.App/nupkg`
 
 Read more here
 [Source Link](https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/sourcelink)

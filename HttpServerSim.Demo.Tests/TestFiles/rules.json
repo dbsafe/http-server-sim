@@ -1,6 +1,53 @@
 {
   "rules": [
     {
+      "name": "create-employee",
+      "description": "",
+      "conditions": [
+        {
+          "field": "Method",
+          "operator": "Equals",
+          "value": "POST"
+        }
+      ],
+      "response": {
+        "statusCode": 200,
+        "contentType": "application/json",
+        "contentValue": "employee-1.json",
+        "contentValueType": "File",
+        "headers": [
+          {
+            "key": "header-1",
+            "value": [ "header-11", "header-12" ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-employee-compressed-response",
+      "description": "",
+      "conditions": [
+        {
+          "field": "Method",
+          "operator": "Equals",
+          "value": "POST"
+        }
+      ],
+      "response": {
+        "statusCode": 200,
+        "contentType": "application/json",
+        "contentValue": "employee-1.json",
+        "contentValueType": "File",
+        "encoding": "GZip",
+        "headers": [
+          {
+            "key": "Content-Encoding",
+            "value": [ "gzip" ]
+          }
+        ]
+      }
+    },
+    {
       "name": "get-employee-from-file",
       "description": "",
       "conditions": [

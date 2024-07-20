@@ -66,6 +66,30 @@
         "contentValue": "[{\"Id\":1,\"Name\":\"name-1\"}]",
         "contentValueType": "Text"
       }
+    },
+    {
+      "name": "create-employee-compressed-response",
+      "description": "",
+      "conditions": [
+        {
+          "field": "Method",
+          "operator": "Equals",
+          "value": "POST"
+        }
+      ],
+      "response": {
+        "statusCode": 200,
+        "contentType": "application/json",
+        "contentValue": "employee-1.json",
+        "contentValueType": "File",
+        "encoding": "GZip",
+        "headers": [
+          {
+            "key": "Content-Encoding",
+            "value": [ "gzip" ]
+          }
+        ]
+      }
     }
   ]
 }

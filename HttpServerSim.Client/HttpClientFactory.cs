@@ -1,14 +1,20 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace HttpServerSim.Client;
 
 public static class HttpClientFactory
 {
     public static HttpClient CreateHttpClient(string name) => new(new LoggingHandler(name, new HttpClientHandler()));
+    public static HttpClient CreateHttpClient(string name, DecompressionMethods decompressionMethods)
+    {
+        var httpClientHandler = new HttpClientHandler { AutomaticDecompression = decompressionMethods };
+        return new(new LoggingHandler(name, httpClientHandler));
+    }
 }
 
 public class LoggingHandler(string name, HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)

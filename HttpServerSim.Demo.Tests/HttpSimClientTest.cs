@@ -18,6 +18,7 @@ namespace HttpServerSim.Demo.Tests;
 public class HttpSimClientTest
 {
     private static readonly HttpClient _httpClient = HttpClientFactory.CreateHttpClient(nameof(HttpSimClientTest));
+    private static readonly HttpClient _httpClientResponseCompressed = HttpClientFactory.CreateHttpClient($"{nameof(HttpSimClientTest)}_Encoded", DecompressionMethods.GZip);
     private static readonly object _syncObj = new();
     private HttpSimClient _httpSimClient;
     private static readonly string _testFilesLocation = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestFiles");
@@ -80,11 +81,32 @@ public class HttpSimClientTest
         var actualHttpResponse = await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", employee);
 
         AssertJsonResponse(employee, actualHttpResponse);
-        AssertHeaders(headers, actualHttpResponse.Headers);
+        AssertResponseHeaders(headers, actualHttpResponse.Headers);
     }
 
     [TestMethod]
-    public async Task WithTextResponse_With_Multiple_Conditions()
+    public async Task WithGZipJsonResponse()
+    {
+        var employee = new { Id = 1, Name = "name-1" };
+        var headers = new KeyValuePair<string, string[]>[]
+        {
+            new("Content-Encoding", ["gzip"])
+        };
+
+        var rule = RuleBuilder.CreateRule("create-employee-compressed-response")
+            .WithCondition(field: Field.Method, op: Operator.Equals, value: "POST")
+            .WithJsonResponse(employee, headers: headers, encoding: HttpSimResponseEncoding.GZip)
+            .Rule;
+        _httpSimClient.AddRule(rule);
+
+        var actualHttpResponse = await _httpClientResponseCompressed.PostAsJsonAsync($"{_simUrl}/employees", employee);
+
+        AssertJsonResponse(employee, actualHttpResponse);
+        actualHttpResponse.Content.GetType().Name.Should().Be("GZipDecompressedContent");
+    }
+
+    [TestMethod]
+    public async Task WithTextResponse_WithMultipleConditions()
     {
         var rule = RuleBuilder.CreateRule("get-employees")
             .WithCondition(field: Field.Method, op: Operator.Equals, value: "GET")
@@ -254,7 +276,7 @@ public class HttpSimClientTest
         actual.Should().NotBeNull();
 
         AssertStatusCode(expected.StatusCode, actual.StatusCode);
-        AssertHeaders(expected.Headers, actual.Headers);
+        AssertResponseHeaders(expected.Headers, actual.Headers);
         AssertContent(expected.ContentValue, expected.ContentType, actual.Content);
     }
 
@@ -276,7 +298,27 @@ public class HttpSimClientTest
         AssertTextContent(expectedContent, actual.Content);
     }
 
-    private static void AssertHeaders(KeyValuePair<string, string[]>[] expectedHeaders, HttpResponseHeaders actualHeaders)
+    private static void AssertResponseHeaders(KeyValuePair<string, string[]>[] expectedHeaders, HttpResponseHeaders actualHeaders)
+    {
+        if (expectedHeaders == null)
+        {
+            return;
+        }
+
+        actualHeaders.Should().NotBeNull();
+        foreach (var expectedKvpHeader in expectedHeaders)
+        {
+            var actualKvpHeader = actualHeaders.FirstOrDefault(h => h.Key == expectedKvpHeader.Key);
+            actualKvpHeader.Should().NotBeNull();
+
+                foreach (var expectedHeader in expectedKvpHeader.Value)
+                {
+                    actualKvpHeader.Value.Should().Contain(expectedHeader);
+                }
+        }
+    }
+
+    private static void AssertContentHeaders(KeyValuePair<string, string[]>[] expectedHeaders, HttpContentHeaders actualHeaders)
     {
         if (expectedHeaders == null)
         {

@@ -22,7 +22,8 @@ public class HttpSimClient(string controlUrl)
     private readonly string _controlUrl = controlUrl;
     private static readonly JsonSerializerOptions _serializerOptions = new()
     {
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
+        WriteIndented = true
     };
 
     public void ClearRules()

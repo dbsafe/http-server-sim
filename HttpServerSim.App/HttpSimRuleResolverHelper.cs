@@ -3,7 +3,9 @@
 using HttpServerSim.Client;
 using HttpServerSim.Contracts;
 using HttpServerSim.Models;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
+using System.IO.Compression;
 using System.Net;
 using System.Text;
 
@@ -46,18 +48,29 @@ internal static class HttpSimRuleResolverHelper
                 return;
             }
             
-            SetHttpResponse(context, httpSimRule.Response, logger);
+            await SetHttpResponseAsync(context, httpSimRule.Response, logger);
         };
     }
 
-    private static void SetHttpResponse(HttpContext context, HttpSimResponse httpSimResponse, ILogger logger)
+    private static async Task SetHttpResponseAsync(HttpContext context, HttpSimResponse httpSimResponse, ILogger logger)
     {
-        context.Response.StatusCode = httpSimResponse.StatusCode;
-        SetHttpResponseHeader(context, httpSimResponse);
-        SetHttpResponseContent(context, httpSimResponse, logger);
+        try
+        {
+            context.Response.StatusCode = httpSimResponse.StatusCode;
+            SetHttpResponseHeader(context, httpSimResponse);
+            await SetHttpResponseContentAsync(context, httpSimResponse, logger);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error setting response");
+            logger.LogError(ex.ToString());
+            var buffer = Encoding.ASCII.GetBytes("Simulator Error - Error setting a response");
+            await context.Response.Body.WriteAsync(buffer);
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        }
     }
 
-    private static void SetHttpResponseContent(HttpContext context, HttpSimResponse httpSimResponse, ILogger logger)
+    private static async Task SetHttpResponseContentAsync(HttpContext context, HttpSimResponse httpSimResponse, ILogger logger)
     {
         if (httpSimResponse.ContentValue == null)
         {
@@ -73,7 +86,22 @@ internal static class HttpSimRuleResolverHelper
                 ContentValueType.File => File.ReadAllBytes(httpSimResponse.ContentValue),
                 _ => throw new InvalidOperationException($"Unexpected {httpSimResponse.ContentValueType}: '{httpSimResponse.ContentValueType}'."),
             };
-            context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+
+            if (httpSimResponse.Encoding == HttpSimResponseEncoding.GZip)
+            {
+                var syncIoFeature = context.Features.Get<IHttpBodyControlFeature>();
+                if (syncIoFeature != null)
+                {
+                    syncIoFeature.AllowSynchronousIO = true;
+                }
+
+                using var compressor = new GZipStream(context.Response.Body, CompressionLevel.SmallestSize);
+                await compressor.WriteAsync(buffer);
+            }
+            else
+            {
+                await context.Response.Body.WriteAsync(buffer);
+            }
         }
         catch (Exception ex)
         {
