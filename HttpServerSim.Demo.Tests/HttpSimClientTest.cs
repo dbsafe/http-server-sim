@@ -21,7 +21,7 @@ public class HttpSimClientTest
     private static readonly HttpClient _httpClientResponseCompressed = HttpClientFactory.CreateHttpClient($"{nameof(HttpSimClientTest)}_Encoded", DecompressionMethods.GZip);
     private static readonly object _syncObj = new();
     private HttpSimClient _httpSimClient;
-    private static readonly string _testFilesLocation = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestFiles");
+    private static readonly string _testFilesLocation = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "ResponseFiles");
 
     private readonly string _simUrl = "http://localhost:8080";
     private readonly string _controlUrl = "http://localhost:8090";
@@ -123,11 +123,13 @@ public class HttpSimClientTest
     [TestMethod]
     public async Task ReturnTextResponseFromFile()
     {
-        var path = Path.Combine(_testFilesLocation, "employee-1.json");
+        // This file must exists in the test project and in the target project.
+        // Both projects are sharing the same file as a link
+        var filename = "employee-1.json";
 
         var rule = RuleBuilder.CreateRule("get-employees")
             .WithCondition(field: Field.Path, op: Operator.Contains, value: "employee-from-file")
-            .ReturnTextResponseFromFile(path)
+            .ReturnTextResponseFromFile(filename)
             .Rule;
         _httpSimClient.AddRule(rule);
 
@@ -135,6 +137,7 @@ public class HttpSimClientTest
 
         AssertContentType("application/json", actualHttpResponse.Content.Headers);
 
+        var path = Path.Combine(_testFilesLocation, filename);
         var expectedContent = File.ReadAllText(path);
         AssertTextContent(expectedContent, actualHttpResponse.Content);
     }

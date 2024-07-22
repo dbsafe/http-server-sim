@@ -11,13 +11,13 @@ namespace HttpServerSim;
 /// </summary>
 public static class RulesConfigExtension
 {
-    public static IApplicationBuilder UseRulesConfig(this WebApplication app, IEnumerable<ConfigRule>? configRules, string contentDirectory, IHttpSimRuleStore ruleStore)
+    public static IApplicationBuilder UseRulesConfig(this WebApplication app, IEnumerable<ConfigRule>? configRules, string responseFilesFolder, IHttpSimRuleStore ruleStore)
     {
-        LoadRules(configRules, contentDirectory, ruleStore, app.Logger);
+        LoadRules(configRules, responseFilesFolder, ruleStore, app.Logger);
         return app;
     }
 
-    public static void LoadRules(IEnumerable<ConfigRule>? configRules, string contentDirectory, IHttpSimRuleStore ruleStore, ILogger logger)
+    public static void LoadRules(IEnumerable<ConfigRule>? configRules, string responseFilesFolder, IHttpSimRuleStore ruleStore, ILogger logger)
     {
         if (configRules is null || !configRules.Any())
         {
@@ -31,7 +31,7 @@ public static class RulesConfigExtension
         {
             sb.AppendLine($"\t{configRule.Name}");
 
-            var apiResponse = BuildResponseFromRule(logger, configRule, contentDirectory);
+            var apiResponse = BuildResponseFromRule(logger, configRule, responseFilesFolder);
             if (apiResponse is null)
             {
                 continue;
@@ -46,7 +46,7 @@ public static class RulesConfigExtension
         logger.LogDebug(sb.ToString());
     }
 
-    private static HttpSimResponse? BuildResponseFromRule(ILogger logger, ConfigRule configRule, string contentDirectory)
+    private static HttpSimResponse? BuildResponseFromRule(ILogger logger, ConfigRule configRule, string responseFilesFolder)
     {
         if (configRule.Response is null)
         {
@@ -62,7 +62,7 @@ public static class RulesConfigExtension
                     break;
 
                 case ContentValueType.File:
-                    var path = Path.Combine(contentDirectory, configRule.Response.ContentValue);
+                    var path = Path.Combine(responseFilesFolder, configRule.Response.ContentValue);
                     if (!File.Exists(path))
                     {
                         logger.LogWarning($"Rule: {configRule.Name} - File '{path}' not found.");

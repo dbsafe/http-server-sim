@@ -14,7 +14,7 @@ namespace HttpServerSim;
 /// </summary>
 internal static class ControlEndpointHelper
 {
-    public static IEndpointRouteBuilder Map(IEndpointRouteBuilder app, IHttpSimRuleStore ruleStore, string contentRoot, ILogger logger)
+    public static IEndpointRouteBuilder Map(IEndpointRouteBuilder app, IHttpSimRuleStore ruleStore, string responseFilesFolder, ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(app);
 
@@ -47,7 +47,7 @@ internal static class ControlEndpointHelper
         {
             return ExecuteProtected(logger, () =>
             {
-                RulesConfigExtension.LoadRules(rules, contentRoot, ruleStore, logger);
+                RulesConfigExtension.LoadRules(rules, responseFilesFolder, ruleStore, logger);
                 logger.LogDebug($"Created rules '{string.Join(',', rules.Select(r => r.Name))}'");
                 return OperationResult.CreateSuccess();
             });

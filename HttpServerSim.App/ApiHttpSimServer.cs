@@ -27,17 +27,17 @@ public sealed class ApiHttpSimServer : IDisposable
     {
         _httpSimRuleResolver = new HttpSimRuleResolver(_ruleStore);
         (_httpSimApp, var appConfig) = BuildHttpSimApplication(args, isControlEndpoint: false, appConfig => appConfig.LogRequestAndResponse);
-        _httpSimApp.UseHttpSimRuleResolver(_httpSimRuleResolver, _httpSimApp.Logger);
+        _httpSimApp.UseHttpSimRuleResolver(_httpSimRuleResolver, _httpSimApp.Logger, appConfig.ResponseFilesFolder!);
         rulesConfig = LoadRulesConfig(appConfig);
 
-        _httpSimApp.UseRulesConfig(rulesConfig.Rules, Path.GetDirectoryName(appConfig.RulesPath)!, _ruleStore);
+        _httpSimApp.UseRulesConfig(rulesConfig.Rules, appConfig.ResponseFilesFolder!, _ruleStore);
         _httpSimApp.Urls.Add(appConfig.Url!);
 
         // Start control endpoint only when the url is present
         if (!string.IsNullOrEmpty(appConfig.ControlUrl))
         {
             (_controlApp, _) = BuildHttpSimApplication(args, isControlEndpoint: true, appConfig => appConfig.LogControlRequestAndResponse, appConfig);
-            _controlApp.MapControlEndpoints(_ruleStore, _controlApp.Environment.ContentRootPath, _controlApp.Logger);
+            _controlApp.MapControlEndpoints(_ruleStore, appConfig.ResponseFilesFolder!, _controlApp.Logger);
             _controlApp.Urls.Add(appConfig.ControlUrl!);
         }
     }

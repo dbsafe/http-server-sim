@@ -19,7 +19,7 @@ internal static class HttpSimRuleResolverHelper
     /// <param name="httpSimRuleResolver"></param>
     /// <param name="logger"></param>
     /// <returns></returns>
-    public static Func<HttpContext, RequestDelegate, Task> CreateMiddlewareHandleRequest(IHttpSimRuleResolver httpSimRuleResolver, ILogger logger)
+    public static Func<HttpContext, RequestDelegate, Task> CreateMiddlewareHandleRequest(IHttpSimRuleResolver httpSimRuleResolver, ILogger logger, string responseFilesFolder)
     {
         return async (context, next) =>
         {
@@ -48,17 +48,17 @@ internal static class HttpSimRuleResolverHelper
                 return;
             }
             
-            await SetHttpResponseAsync(context, httpSimRule.Response, logger);
+            await SetHttpResponseAsync(context, httpSimRule.Response, logger, responseFilesFolder);
         };
     }
 
-    private static async Task SetHttpResponseAsync(HttpContext context, HttpSimResponse httpSimResponse, ILogger logger)
+    private static async Task SetHttpResponseAsync(HttpContext context, HttpSimResponse httpSimResponse, ILogger logger, string responseFilesFolder)
     {
         try
         {
             context.Response.StatusCode = httpSimResponse.StatusCode;
             SetHttpResponseHeader(context, httpSimResponse);
-            await SetHttpResponseContentAsync(context, httpSimResponse, logger);
+            await SetHttpResponseContentAsync(context, httpSimResponse, logger, responseFilesFolder);
         }
         catch (Exception ex)
         {
@@ -70,7 +70,19 @@ internal static class HttpSimRuleResolverHelper
         }
     }
 
-    private static async Task SetHttpResponseContentAsync(HttpContext context, HttpSimResponse httpSimResponse, ILogger logger)
+    private static byte[] GetBytesFromFile(string path, ILogger logger)
+    {
+        logger.LogDebug($"Getting content from file: '{path}'");
+        if (File.Exists(path))
+        {
+            return File.ReadAllBytes(path);
+        }
+
+        logger.LogWarning($"File '{path}' not found");
+        return [];
+    }
+
+    private static async Task SetHttpResponseContentAsync(HttpContext context, HttpSimResponse httpSimResponse, ILogger logger, string responseFilesFolder)
     {
         if (httpSimResponse.ContentValue == null)
         {
@@ -83,7 +95,7 @@ internal static class HttpSimRuleResolverHelper
             byte[] buffer = httpSimResponse.ContentValueType switch
             {
                 ContentValueType.Text => Encoding.ASCII.GetBytes(httpSimResponse.ContentValue),
-                ContentValueType.File => File.ReadAllBytes(httpSimResponse.ContentValue),
+                ContentValueType.File => GetBytesFromFile(Path.Combine(responseFilesFolder, httpSimResponse.ContentValue), logger),
                 _ => throw new InvalidOperationException($"Unexpected {httpSimResponse.ContentValueType}: '{httpSimResponse.ContentValueType}'."),
             };
 
