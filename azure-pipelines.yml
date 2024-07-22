@@ -1,0 +1,49 @@
+name: $(TeamProject)_$(BuildDefinitionName)_$(SourceBranchName)_$(VersionMajor).$(VersionMinor).$(VersionPatch).$(Build.BuildId)$(PrereleaseLabel)
+
+variables:
+  - name: _version
+    value: $(VersionMajor).$(VersionMinor).$(VersionPatch).$(Build.BuildId)
+  - name: _packageVersion
+    value: $(_version)$(PrereleaseLabel)
+  - name: _publishNugetPackages
+    value: $[or(eq(variables['PrereleaseLabel'], ''), eq(variables['PrereleaseLabel'], '-beta'))]
+
+trigger:
+- main
+
+pool: 
+  vmImage: ubuntu-latest
+
+steps:
+- script: echo $(Build.BuildNumber)
+- script: echo $(_publishNugetPackages)
+
+- script: dotnet build /warnaserror --configuration Release -p:Version=$(_version) -p:PackageVersion=$(_packageVersion) -p:PackageOutputPath=$(Build.ArtifactStagingDirectory)
+  displayName: Build solution      
+
+- script: docker build -t http-server-sim-build -f Dockerfile .
+  displayName: Build Docker image with HttpServerSim.App
+
+- script: docker run -d -p 8080:8080 -p 8090:8090 http-server-sim-build
+  displayName: Create and run Docker container with HttpServerSim.App
+
+- task: DotNetCoreCLI@2
+  displayName: Run Tests
+  inputs:
+    command: 'test'
+    projects: './HttpServerSim.Demo.Tests/HttpServerSim.Demo.Tests.csproj'
+
+- task: PublishBuildArtifacts@1
+  condition: and(succeeded(), eq(variables._publishNugetPackages, 'true'))
+  displayName: 'Publish Artifact'
+  inputs:
+    ArtifactName: '$(Build.BuildNumber)'
+
+- task: NuGetCommand@2
+  condition: and(succeeded(), eq(variables._publishNugetPackages, 'true'))
+  displayName: 'Publish NuGet Packages'
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'external'
+    publishFeedCredentials: 'http-server-sim'

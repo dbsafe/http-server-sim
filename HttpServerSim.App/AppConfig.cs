@@ -18,7 +18,8 @@ public class AppConfig
     public string? ControlUrl { get; set; }
     public bool LogControlRequestAndResponse { get; set; }
     public bool LogRequestAndResponse { get; set; }
-    
+    public string? ResponseFilesFolder { get; set; }
+
     public override string ToString() => JsonSerializer.Serialize(this, _jsonSerializerOptions);
 }
 

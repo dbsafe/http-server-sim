@@ -62,11 +62,6 @@ public static class RuleBuilderExtensionMethods
 
     public static RuleBuilder ReturnTextResponseFromFile(this RuleBuilder ruleBuilder, string path, string contentType = "application/json", KeyValuePair<string, string[]>[]? headers = null, int statusCode = 200)
     {
-        if (!File.Exists(path))
-        {
-            throw new FileNotFoundException(path);
-        }
-
         var response = new HttpSimResponse
         {
             StatusCode = statusCode,

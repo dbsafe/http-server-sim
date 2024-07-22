@@ -6,14 +6,6 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true
-    },
-    "Selfhost with Test files": {
-      "commandName": "Project",
-      "workingDirectory": "..\\HttpServerSim.Demo.Tests\\TestFiles",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "dotnetRunMessages": true
     }
   },
   "$schema": "http://json.schemastore.org/launchsettings.json"
