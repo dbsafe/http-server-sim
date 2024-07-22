@@ -1,7 +1,31 @@
 # http-server-sim
 Test HTTP Server to support integration test for applications that send HTTP requests to other components.
 
-### Building a NuGet package
+## Executing Tests
+
+### Test running the app locally
+
+Start `HttpServerSim.App` without debugger and execute the tests.
+
+### Test running the app in a container
+
+This is the way used in the build.</p>
+
+Build image:</p> `docker build -t http-server-sim-build -f Dockerfile .`</p>
+Build image with verbose output:</p> `docker build -t http-server-sim-build --progress=plain --no-cache -f Dockerfile .`</p>
+
+Run container from image</p>
+	- interactive
+	`docker run -i -t http-server-sim-build`</p>
+	- interactive, remove when done
+	`docker run -i -t --rm http-server-sim-build`</p>
+	- override ENTRYPOINT with bash
+	`docker run -i -t --rm --entrypoint "/bin/bash" http-server-sim-build `</p>
+	- mapp ports</p>
+	`docker run -i -t --rm -p 8080:8080 -p 8090:8090 --entrypoint "/bin/bash" http-server-sim-build`</p>
+	`docker run -i -t --rm -p 8080:8080 -p 8090:8090 http-server-sim-build`</p>
+
+## Building a NuGet package
 
 Builds packages from all projects:</p>
 `dotnet pack --include-source --include-symbols --no-build`
@@ -29,3 +53,4 @@ Read more here
 ### Remove http-server-sim
 
 `dotnet tool uninstall httpserversim.app -g`
+
