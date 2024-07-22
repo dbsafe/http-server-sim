@@ -11,7 +11,7 @@
 	<Title>http-server-sim</Title>
 	<Authors>Ernesto Valcarcel</Authors>
 	<Product>http-server-sim</Product>
-	<Description>A Web API that simulates pre-configured endpoints, supporting the development, integration, and testing of components that use HTTP.</Description>
+	<Description>A .NET tool that runs a Web API simulating HTTP endpoints, supporting the development and testing of components that use HTTP.</Description>
 	<Copyright>Copyright (c) 2024 http-server-sim</Copyright>
 	<PackageProjectUrl>https://github.com/dbsafe/http-server-sim</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/dbsafe/http-server-sim</RepositoryUrl>
@@ -19,9 +19,15 @@
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 	<IncludeSymbols>True</IncludeSymbols>
+	<PackageId>http-server-sim</PackageId>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>

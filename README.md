@@ -1,5 +1,7 @@
 # http-server-sim
-Test HTTP Server to support integration test for applications that send HTTP requests to other components.
+HTTP Server Simulator is a .NET tool that runs a Web API simulating HTTP endpoints, supporting the development and testing of components that use HTTP.
+
+http-server-sim can called from the shell/command line.
 
 ## Executing Tests
 
