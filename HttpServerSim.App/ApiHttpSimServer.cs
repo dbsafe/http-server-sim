@@ -5,8 +5,9 @@ using HttpServerSim.Contracts;
 using HttpServerSim.Models;
 using HttpServerSim.SelfHosted;
 using Microsoft.AspNetCore.HttpLogging;
-using System.Configuration;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace HttpServerSim;
 
@@ -15,7 +16,6 @@ public sealed class ApiHttpSimServer : IDisposable
     private WebApplication? _httpSimApp;
     private WebApplication? _controlApp;
     private readonly IHttpSimRuleResolver _httpSimRuleResolver;
-    private readonly RulesConfig rulesConfig;
 
     private readonly HttpSimRuleStore _ruleStore = new();
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
@@ -23,30 +23,31 @@ public sealed class ApiHttpSimServer : IDisposable
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    public ApiHttpSimServer(string[] args)
+    public ApiHttpSimServer(string[] args, AppConfig appConfig)
     {
         _httpSimRuleResolver = new HttpSimRuleResolver(_ruleStore);
-        (_httpSimApp, var appConfig) = BuildHttpSimApplication(args, isControlEndpoint: false, appConfig => appConfig.LogRequestAndResponse);
+        
+        _httpSimApp = BuildHttpSimApplication(args, isControlEndpoint: false, appConfig => appConfig.LogRequestAndResponse, appConfig!);
         _httpSimApp.UseHttpSimRuleResolver(_httpSimRuleResolver, _httpSimApp.Logger, appConfig.ResponseFilesFolder!);
-        rulesConfig = LoadRulesConfig(appConfig);
 
-        _httpSimApp.UseRulesConfig(rulesConfig.Rules, appConfig.ResponseFilesFolder!, _ruleStore);
+        var ruleLoaded = TryLoadRulesConfig(appConfig, _httpSimApp.Logger, out RulesConfig? rulesConfig);
+        if (ruleLoaded)
+        {
+            _httpSimApp.UseRulesConfig(rulesConfig!.Rules, appConfig.ResponseFilesFolder!, _ruleStore);
+        }
+        
         _httpSimApp.Urls.Add(appConfig.Url!);
 
         // Start control endpoint only when the url is present
         if (!string.IsNullOrEmpty(appConfig.ControlUrl))
         {
-            (_controlApp, _) = BuildHttpSimApplication(args, isControlEndpoint: true, appConfig => appConfig.LogControlRequestAndResponse, appConfig);
+            _controlApp = BuildHttpSimApplication(args, isControlEndpoint: true, appConfig => appConfig.LogControlRequestAndResponse, appConfig);
             _controlApp.MapControlEndpoints(_ruleStore, appConfig.ResponseFilesFolder!, _controlApp.Logger);
             _controlApp.Urls.Add(appConfig.ControlUrl!);
         }
     }
 
-    private static (WebApplication, AppConfig) BuildHttpSimApplication(
-        string[] args, 
-        bool isControlEndpoint, 
-        Func<AppConfig, bool> getLogRequestAndResponse, 
-        AppConfig? appConfig = null)
+    private static WebApplication BuildHttpSimApplication(string[] args, bool isControlEndpoint, Func<AppConfig, bool> getLogRequestAndResponse, AppConfig appConfig)
     {
         var builder = WebApplication.CreateBuilder(args);
         if (isControlEndpoint)
@@ -54,16 +55,13 @@ public sealed class ApiHttpSimServer : IDisposable
             builder.Services.ConfigureHttpJsonOptions(options =>
             {
                 options.SerializerOptions.WriteIndented = true;
+                options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             });
         }
-        
+
         builder.Logging.ClearProviders();
 
-        // Avoid loading appConfig twice
-        appConfig ??= LoadAppConfig(builder.Configuration);
-
         if (getLogRequestAndResponse.Invoke(appConfig))
-
         {
             AddCustomColorFormatter(builder, isControlEndpoint);
         }
@@ -77,8 +75,8 @@ public sealed class ApiHttpSimServer : IDisposable
         {
             app.UseHttpLogging();
         }
-        
-        return (app, appConfig);
+
+        return app;
     }
 
     private static void AddCustomColorFormatter(WebApplicationBuilder builder, bool isControlEndpoint)
@@ -144,32 +142,36 @@ public sealed class ApiHttpSimServer : IDisposable
 
     public IHttpSimRuleManager CreateRule(string name) => _ruleStore.CreateRule(name);
 
-    private static AppConfig LoadAppConfig(IConfiguration config)
+    private static bool TryLoadRulesConfig(AppConfig appConfig, ILogger logger, [NotNullWhen(true)] out RulesConfig? rulesConfig)
     {
-        try
+        if (appConfig.Rules is null)
         {
-            var appConfig = AppConfigLoader.Load(config);
-            Console.WriteLine($"Configuration:{Environment.NewLine}{appConfig}");
-            return appConfig;
+            logger.LogWarning("A rules file has not been loaded into the simulator.");
+            rulesConfig = null;
+            return false;
         }
-        catch (ConfigurationErrorsException)
-        {
-            Console.WriteLine("Failed to load configuration.");
-            throw;
-        }
-    }
 
-    private static RulesConfig LoadRulesConfig(AppConfig appConfig)
-    {
+        string BuildErrorMessage() => $"Failed to load rules from '{appConfig.Rules}.";
+
         try
         {
-            using var fileStream = File.OpenRead(appConfig.RulesPath!);
-            return JsonSerializer.Deserialize<RulesConfig>(fileStream, _jsonSerializerOptions) ?? throw new InvalidDataException($"Failed to load {nameof(RulesConfig)} from '{appConfig.RulesPath}'");
+            using var fileStream = File.OpenRead(appConfig.Rules);
+            rulesConfig = JsonSerializer.Deserialize<RulesConfig>(fileStream, _jsonSerializerOptions);
         }
-        catch (Exception)
+        catch (Exception ex) when (ex is InvalidDataException || ex is JsonException)
         {
-            Console.WriteLine("Failed to load rules.");
-            throw;
+            var error = appConfig.IsDebugMode ? ex.ToString() : ex.Message;
+            logger.LogError($"{BuildErrorMessage()}.{Environment.NewLine}{error}");
+            rulesConfig = null;
+            return false;
         }
+
+        if (rulesConfig == null)
+        {
+            logger.LogError($"{BuildErrorMessage()}.{Environment.NewLine}Invalid content");
+            return false;
+        }
+
+        return true;
     }
 }

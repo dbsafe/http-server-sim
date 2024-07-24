@@ -13,9 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\HttpServerSim.App\ResponseFiles\employee-1.json" Link="ResponseFiles\employee-1.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="..\HttpServerSim.App\employee-1.json" Link="employee-1.json" />
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -35,10 +33,6 @@
   <ItemGroup>
     <ProjectReference Include="..\HttpServerSim.App\HttpServerSim.App.csproj" />
     <ProjectReference Include="..\HttpServerSim.Client\HttpServerSim.Client.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="ResponseFiles\" />
   </ItemGroup>
 
 </Project>

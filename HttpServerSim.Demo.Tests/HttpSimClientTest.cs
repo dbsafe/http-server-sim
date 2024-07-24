@@ -21,10 +21,10 @@ public class HttpSimClientTest
     private static readonly HttpClient _httpClientResponseCompressed = HttpClientFactory.CreateHttpClient($"{nameof(HttpSimClientTest)}_Encoded", DecompressionMethods.GZip);
     private static readonly object _syncObj = new();
     private HttpSimClient _httpSimClient;
-    private static readonly string _testFilesLocation = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "ResponseFiles");
+    private static readonly string _testFilesLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-    private readonly string _simUrl = "http://localhost:8080";
-    private readonly string _controlUrl = "http://localhost:8090";
+    private readonly string _simUrl = "http://localhost:5000";
+    private readonly string _controlUrl = "http://localhost:5001";
 
     [TestInitialize]
     public void Initialize()

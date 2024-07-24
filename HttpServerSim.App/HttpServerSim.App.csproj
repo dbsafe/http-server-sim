@@ -21,6 +21,7 @@
 	<IncludeSymbols>True</IncludeSymbols>
 	<PackageId>http-server-sim</PackageId>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<PackageOutputPath>./nupkg</PackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -44,12 +45,22 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Update="appsettings.Development.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="appsettings.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	  <Content Update="rules.json">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
-	  <Content Update="ResponseFiles\employee-1.json">
+	  <Content Update="employee-1.json">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="nupkg\" />
 	</ItemGroup>
 
 </Project>

@@ -21,8 +21,8 @@ Run container from image</p>
 	- override ENTRYPOINT with bash
 	`docker run -i -t --rm --entrypoint "/bin/bash" http-server-sim-build `</p>
 	- mapp ports</p>
-	`docker run -i -t --rm -p 8080:8080 -p 8090:8090 --entrypoint "/bin/bash" http-server-sim-build`</p>
-	`docker run -i -t --rm -p 8080:8080 -p 8090:8090 http-server-sim-build`</p>
+	`docker run -i -t --rm -p 5000:5000 -p 5001:5001 --entrypoint "/bin/bash" http-server-sim-build`</p>
+	`docker run -i -t --rm -p 5000:5000 -p 5001:5001 http-server-sim-build`</p>
 
 ## Building a NuGet package
 
@@ -30,11 +30,11 @@ Builds packages from all projects:</p>
 `dotnet pack --include-source --include-symbols --no-build`
 
 Builds packages from all projects setting the version in the dll and in the package:</p>
-`dotnet pack --include-source --include-symbols -p:PackageVersion=0.6.0 -p:Version=0.6.0 --output D:\LocalNuget`
+`dotnet pack --include-source --include-symbols -p:PackageVersion=0.12.0 -p:Version=0.12.0 --output C:\LocalNuget`
 
 Builds one package for one project:</p>
-`dotnet pack .\HttpServerSim.App\HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.2.0 -p:Version=0.2.0 --output C:\LocalNuget`
-`dotnet pack .\HttpServerSim.App\HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.8.0 -p:Version=0.8.0 --output ./HttpServerSim.App/nupkg`
+`dotnet pack .\HttpServerSim.App\HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.8.0 -p:Version=0.8.0 --output C:\LocalNuget`
+`dotnet pack .\HttpServerSim.App\HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.11.0 -p:Version=0.11.0 --output ./HttpServerSim.App/nupkg`
 
 Read more here
 [Source Link](https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/sourcelink)
@@ -42,8 +42,8 @@ Read more here
 
 ### Install http-server-sim as global tool
 
-#### Install last version
-`dotnet tool install -g --add-source ./HttpServerSim.App/nupkg HttpServerSim.App`
+#### Install local build version
+`dotnet tool install -g --add-source ./HttpServerSim.App/nupkg http-server-sim --version 1.0.0`
 
 ### List installed dotnet tools
 
@@ -51,4 +51,4 @@ Read more here
 
 ### Remove http-server-sim
 
-`dotnet tool uninstall httpserversim.app -g`
+`dotnet tool uninstall http-server-sim -g`
