@@ -6,56 +6,111 @@ HTTP Server Simulator is a .NET tool that runs a Web API simulating HTTP endpoin
 
 http-server-sim can called from the shell/command line.
 
-## Executing Tests
+## Usage
 
-### Test running the app locally
+### Installation
+Install the latest version from NuGet:
+```bash
+dotnet tool install --global http-server-sim
+```
+Once http-server-sim is installed as a global tool, it can be executed from any folder.
+For other versions and more information, visit [NuGet](https://www.nuget.org/packages/http-server-sim) and [dotnet tool install](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-tool-install).
 
-Start `HttpServerSim.App` without debugger and execute the tests.
+### Rule file
+The simulation of endpoints is based on a rule file. Here’s how it can be set up:
 
-### Test running the app in a container
+1. Create a rule file defining the endpoints and their behaviors.
+2. Place the rule file in the appropriate directory.
+3. Run the simulator with the rule file.
 
-This is the way used in the build.</p>
+Example of rule file.
+```json
+{
+  "rules": [
+    {
+      "name": "customers-post",
+      "description": "",
+      "conditions": [
+        { "field": "Method", "operator": "Equals", "value": "POST" },
+        { "field": "Path", "operator": "Contains", "value": "/customers" }
+      ],
+      "response": {
+        "statusCode": 200
+      }
+    }
+  ]
+}
+```
 
-Build image:</p> `docker build -t http-server-sim-build -f Dockerfile .`</p>
-Build image with verbose output:</p> `docker build -t http-server-sim-build --progress=plain --no-cache -f Dockerfile .`</p>
+Example command (assuming that the file rule.json is in the current folder where the command http-server-sim is being executed):
+```bash
+http-server-sim --HttpServerSim:RulesPath rules.json --HttpServerSim:Url http://localhost:5000 --HttpServerSim:LogRequestAndResponse true
+```
 
-Run container from image</p>
-	- interactive
-	`docker run -i -t http-server-sim-build`</p>
-	- interactive, remove when done
-	`docker run -i -t --rm http-server-sim-build`</p>
-	- override ENTRYPOINT with bash
-	`docker run -i -t --rm --entrypoint "/bin/bash" http-server-sim-build `</p>
-	- mapp ports</p>
-	`docker run -i -t --rm -p 8080:8080 -p 8090:8090 --entrypoint "/bin/bash" http-server-sim-build`</p>
-	`docker run -i -t --rm -p 8080:8080 -p 8090:8090 http-server-sim-build`</p>
-
-## Building a NuGet package
-
-Builds packages from all projects:</p>
-`dotnet pack --include-source --include-symbols --no-build`
-
-Builds packages from all projects setting the version in the dll and in the package:</p>
-`dotnet pack --include-source --include-symbols -p:PackageVersion=0.6.0 -p:Version=0.6.0 --output D:\LocalNuget`
-
-Builds one package for one project:</p>
-`dotnet pack .\HttpServerSim.App\HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.2.0 -p:Version=0.2.0 --output C:\LocalNuget`
-`dotnet pack .\HttpServerSim.App\HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.8.0 -p:Version=0.8.0 --output ./HttpServerSim.App/nupkg`
-
-Read more here
-[Source Link](https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/sourcelink)
+The following POST request is handled using the rule `customers-post`:
+```bash
+curl --location 'http://localhost:5000/customers' --header 'Content-Type: application/json' --data '{"id":10,"name":"Juan"}' -v
+```
+`http-server-sim` returns a response with 200. 
 
 
-### Install http-server-sim as global tool
+The following GET request:
+```bash
+curl --location 'http://localhost:5000/customers' -v
+```
 
-#### Install last version
-`dotnet tool install -g --add-source ./HttpServerSim.App/nupkg HttpServerSim.App`
+returns 404 with content `Rule matching request not found`
 
-### List installed dotnet tools
+http-server-sim output:
+```bash
+Request:
+Accept: */*
+Host: localhost:5000
+User-Agent: curl/8.7.1
+Protocol: HTTP/1.1
+Method: GET
+Scheme: http
+PathBase:
+Path: /customers
 
-`dotnet tool list -g`
+warn - HttpServerSim.App
+Rule matching request not found.
 
-### Remove http-server-sim
+Response:
+StatusCode: 404
+```
 
-`dotnet tool uninstall httpserversim.app -g`
+### http-server-sim options
+
+| Option                                     | Description                                       | Value/Example           |
+|--------------------------------------------|---------------------------------------------------|-------------------------|
+| HttpServerSim:RulesPath                    | Rule file with predefined rules                   | `rules.json`            |
+| HttpServerSim:Url                          | URL for simulating endpoints                      | `http://localhost:5000` |
+| HttpServerSim:LogRequestAndResponse        | Whether requests and responses are logged         | `true`                  |
+| HttpServerSim:ControlUrl                   | URL for managing rules dynamically                | `http://localhost:5001` |
+| HttpServerSim:LogControlRequestAndResponse | Whether control requests and responses are logged | `true`                  |
+
+## Rule Conditions
+
+When `http-server-sim` processes a request, it uses rule conditions to match a rule to the request. 
+
+Example of conditions:
+```json
+"conditions": [
+  { "field": "Method", "operator": "Equals", "value": "POST" },
+  { "field": "Path", "operator": "Contains", "value": "/customers" }
+]
+```
+
+This condition applies when:
+- The request method is POST, and
+- The URL path contains /customers.
+
+There are two types of conditions, `Method` and `Path`
+
+1. **Method Conditions**: These specify the HTTP method (e.g., `GET`, `POST`) that the request must match.
+2. **URL Path Conditions**: These specify the URL path that the request must match.
+
+The supported operators are: `Equals`, `StartWith`, and `Contains`
+
 
