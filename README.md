@@ -4,7 +4,7 @@
 
 HTTP Server Simulator is a .NET tool that runs a Web API simulating HTTP endpoints, supporting the development and testing of components that use HTTP.
 
-http-server-sim can called from the shell/command line.
+http-server-sim can be called from the shell/command line.
 
 ## Usage
 
@@ -80,7 +80,7 @@ Response:
 StatusCode: 404
 ```
 
-### http-server-sim options
+### http-server-sim CLI options
 
 | Option                                     | Description                                       | Value/Example           |
 |--------------------------------------------|---------------------------------------------------|-------------------------|
