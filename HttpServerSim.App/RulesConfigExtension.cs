@@ -43,7 +43,7 @@ public static class RulesConfigExtension
             ruleManager.Rule.Conditions = configRule.Conditions;
         }
 
-        logger.LogDebug(sb.ToString());
+        logger.LogInformation(sb.ToString());
     }
 
     private static HttpSimResponse? BuildResponseFromRule(ILogger logger, ConfigRule configRule, string responseFilesFolder)

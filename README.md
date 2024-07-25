@@ -44,7 +44,7 @@ Example of rule file.
 
 Example command (assuming that the file rule.json is in the current folder where the command http-server-sim is being executed):
 ```bash
-http-server-sim --HttpServerSim:RulesPath rules.json --HttpServerSim:Url http://localhost:5000 --HttpServerSim:LogRequestAndResponse true
+http-server-sim --Rules rules.json
 ```
 
 The following POST request is handled using the rule `customers-post`:
@@ -82,15 +82,17 @@ StatusCode: 404
 
 ### http-server-sim CLI options
 
-| Option                                     | Description                                       | Value/Example           |
-|--------------------------------------------|---------------------------------------------------|-------------------------|
-| HttpServerSim:RulesPath                    | Rule file with predefined rules                   | `rules.json`            |
-| HttpServerSim:Url                          | URL for simulating endpoints                      | `http://localhost:5000` |
-| HttpServerSim:LogRequestAndResponse        | Whether requests and responses are logged         | `true`                  |
-| HttpServerSim:ControlUrl                   | URL for managing rules dynamically                | `http://localhost:5001` |
-| HttpServerSim:LogControlRequestAndResponse | Whether control requests and responses are logged | `true`                  |
+| Option                           | Description                                                                                       |
+|----------------------------------|---------------------------------------------------------------------------------------------------|
+| --ControlUrl <url>               | URL for managing rules dynamically. Not required. Example: http://localhost:5001.                 |
+| --Help                           | Prints the help.                                                                                  |
+| --LogControlRequestAndResponse   | Whether control requests and responses are logged. Default: false.                                |
+| --LogRequestAndResponse          | Whether requests and responses are logged. Default: true.                                         |
+| --Rules <file-name> | <path>     | Rules file. It can be a file name that exists in the current directory or a full path to a file.  |
+| --Url <url>                      | URL for simulating endpoints. Default: http://localhost:5000                                      |
+|                                  | --Url and --ControlUrl cannot share the same value.                                               |
 
-## Rule Conditions
+## Rule conditions
 
 When `http-server-sim` processes a request, it uses rule conditions to match a rule to the request. 
 
