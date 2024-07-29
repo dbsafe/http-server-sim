@@ -7,7 +7,7 @@ namespace HttpServerSim.Models;
 /// </summary>
 public class HttpSimResponse : HttpSimMessage
 {
-    public int StatusCode { get; set; }
+    public int StatusCode { get; set; } = 200;
     public HttpSimResponseEncoding Encoding { get; set; }
 }
 
