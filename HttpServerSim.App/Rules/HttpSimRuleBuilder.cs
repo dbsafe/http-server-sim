@@ -1,7 +1,7 @@
 ﻿using HttpServerSim.Contracts;
 using HttpServerSim.Models;
 
-namespace HttpServerSim.Services;
+namespace HttpServerSim.App.Rules;
 
 /// <summary>
 /// Supports creating rules in the server.

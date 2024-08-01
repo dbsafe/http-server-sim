@@ -1,7 +1,6 @@
 ﻿using HttpServerSim.Contracts;
-using HttpServerSim.Services;
 
-namespace HttpServerSim.SelfHosted;
+namespace HttpServerSim.App.Rules;
 
 /// <summary>
 /// Rule store
