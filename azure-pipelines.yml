@@ -27,6 +27,12 @@ steps:
     command: 'test'
     projects: './HttpServerSim.App.Tests/HttpServerSim.App.Tests.csproj'
 
+- task: DotNetCoreCLI@2
+  displayName: Run Unit Tests - Logger
+  inputs:
+    command: 'test'
+    projects: './HttpServerSim.App.RequestResponseLogger.Tests/HttpServerSim.App.RequestResponseLogger.Tests.csproj'
+
 - script: docker build -t http-server-sim-build -f Dockerfile .
   displayName: Build Docker image with HttpServerSim.App
 

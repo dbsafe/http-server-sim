@@ -4,7 +4,7 @@ using HttpServerSim.Contracts;
 using HttpServerSim.Models;
 using System.Text;
 
-namespace HttpServerSim;
+namespace HttpServerSim.App.Rules;
 
 /// <summary>
 /// Defines methods for loading rules in the rule store.
@@ -43,7 +43,7 @@ public static class RulesConfigExtension
             ruleManager.Rule.Conditions = configRule.Conditions;
         }
 
-        logger.LogInformation(sb.ToString());
+        logger.LogDebug(sb.ToString());
     }
 
     private static HttpSimResponse? BuildResponseFromRule(ILogger logger, ConfigRule configRule, string responseFilesFolder)
@@ -76,7 +76,7 @@ public static class RulesConfigExtension
                     return null;
             }
         }
-        
+
         return configRule.Response;
     }
 

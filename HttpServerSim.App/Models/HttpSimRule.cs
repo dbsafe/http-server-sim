@@ -10,6 +10,7 @@ public class HttpSimRule(string name) : IHttpSimRule
 {
     public static readonly Func<HttpSimRequest, bool> UnspecifiedRuleEvaluationFunc = _ => false;
 
+    private readonly object _requestLocker = new();
     private long _matchCount;
     private readonly List<HttpSimRequest> _requests = [];
     private Func<HttpSimRequest, bool> _ruleEvaluationFunc = UnspecifiedRuleEvaluationFunc;
@@ -24,10 +25,25 @@ public class HttpSimRule(string name) : IHttpSimRule
     }
 
     public int MatchCount => (int)Interlocked.Read(ref _matchCount);
-    public IEnumerable<HttpSimRequest> Requests => _requests;
+    public IEnumerable<HttpSimRequest> Requests
+    {
+        get
+        {
+            lock (_requestLocker)
+            {
+                return [.. _requests];
+            }
+        }
+    }
 
     public List<ConfigCondition>? Conditions { get; set; }
 
     public void IncMatchCount() => Interlocked.Increment(ref _matchCount);
-    public void AddRequest(HttpSimRequest request) => _requests.Add(request);
+    public void AddRequest(HttpSimRequest request)
+    {
+        lock (_requestLocker)
+        {
+            _requests.Add(request);
+        }
+    }
 }

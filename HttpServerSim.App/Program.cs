@@ -1,4 +1,5 @@
 using HttpServerSim;
+using HttpServerSim.App.Config;
 using System.Reflection;
 
 Console.WriteLine($"HttpServerSim version: {Assembly.GetExecutingAssembly().GetName().Version}");

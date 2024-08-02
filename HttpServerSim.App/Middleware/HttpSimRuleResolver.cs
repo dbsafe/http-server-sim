@@ -1,5 +1,6 @@
 ﻿// Ignore Spelling: Api app Middleware
 
+using HttpServerSim.App.Contracts;
 using HttpServerSim.Client;
 using HttpServerSim.Contracts;
 using HttpServerSim.Models;
@@ -9,16 +10,41 @@ using System.IO.Compression;
 using System.Net;
 using System.Text;
 
-namespace HttpServerSim;
+namespace HttpServerSim.App.Middleware;
 
-internal static class HttpSimRuleResolverHelper
+internal static class HttpSimRuleResolver
 {
+    public static Func<HttpContext, RequestDelegate, Task> CreateMiddlewareRequestResponseLogger(IRequestResponseLogger requestResponseLogger)
+    {
+        return async (context, next) =>
+        {
+            await requestResponseLogger.LogRequestAsync(context);
+
+            var originalResponseBody = context.Response.Body;
+            try
+            {
+                using (var ms = new MemoryStream())
+                {
+                    context.Response.Body = ms;
+
+                    await next(context);
+
+                    ms.Position = 0;
+                    await requestResponseLogger.LogResponseAsync(context);
+                    ms.Position = 0;
+                    await ms.CopyToAsync(originalResponseBody);
+                }
+            }
+            finally
+            {
+                context.Response.Body = originalResponseBody;
+            }
+        };
+    }
+
     /// <summary>
     /// Creates middleware for finding a rule that matches a request.
     /// </summary>
-    /// <param name="httpSimRuleResolver"></param>
-    /// <param name="logger"></param>
-    /// <returns></returns>
     public static Func<HttpContext, RequestDelegate, Task> CreateMiddlewareHandleRequest(IHttpSimRuleResolver httpSimRuleResolver, ILogger logger, string responseFilesFolder)
     {
         return async (context, next) =>
@@ -47,7 +73,7 @@ internal static class HttpSimRuleResolverHelper
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
                 return;
             }
-            
+
             await SetHttpResponseAsync(context, httpSimRule.Response, logger, responseFilesFolder);
         };
     }
@@ -107,7 +133,7 @@ internal static class HttpSimRuleResolverHelper
                     syncIoFeature.AllowSynchronousIO = true;
                 }
 
-                using var compressor = new GZipStream(context.Response.Body, CompressionLevel.SmallestSize);
+                using var compressor = new GZipStream(context.Response.Body, CompressionLevel.SmallestSize, leaveOpen: true);
                 await compressor.WriteAsync(buffer);
             }
             else
@@ -129,10 +155,10 @@ internal static class HttpSimRuleResolverHelper
             return;
         }
 
-        foreach (var soureHeader in httpSimResponse.Headers)
+        foreach (var sourceHeader in httpSimResponse.Headers)
         {
-            var values = new StringValues(soureHeader.Value);
-            context.Response.Headers[soureHeader.Key] = values;
+            var values = new StringValues(sourceHeader.Value);
+            context.Response.Headers[sourceHeader.Key] = values;
         }
     }
 
@@ -142,13 +168,16 @@ internal static class HttpSimRuleResolverHelper
         await context.Response.WriteAsync("Rule matching request not found");
     }
 
-    private static async Task<HttpSimRequest> MapRequestAsync(HttpRequest httpRequest)
+    private static async Task<HttpSimRequest> MapRequestAsync(HttpRequest request)
     {
-        var httpSimRequest = new HttpSimRequest(httpRequest.Method, httpRequest.Path);
-        var readResult = await httpRequest.BodyReader.ReadAsync();
-        if (readResult.Buffer.Length > 0)
+        var httpSimRequest = new HttpSimRequest(request.Method, request.Path);
+
+        using var reader = new StreamReader(request.Body, leaveOpen: true);
+        var body = await reader.ReadToEndAsync();
+
+        if (body != string.Empty)
         {
-            httpSimRequest.ContentValue = Encoding.ASCII.GetString(readResult.Buffer);
+            httpSimRequest.ContentValue = body;
         }
 
         return httpSimRequest;

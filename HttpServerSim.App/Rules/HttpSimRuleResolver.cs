@@ -1,7 +1,7 @@
 ﻿using HttpServerSim.Contracts;
 using HttpServerSim.Models;
 
-namespace HttpServerSim.SelfHosted;
+namespace HttpServerSim.App.Rules;
 
 /// <summary>
 /// Finds a rule that applies to a HTTP request

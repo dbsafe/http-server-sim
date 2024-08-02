@@ -1,5 +1,6 @@
 ﻿// Ignore Spelling: Api app
 
+using HttpServerSim.App.Rules;
 using HttpServerSim.Client;
 using HttpServerSim.Client.Models;
 using HttpServerSim.Contracts;
@@ -7,12 +8,12 @@ using HttpServerSim.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics.CodeAnalysis;
 
-namespace HttpServerSim;
+namespace HttpServerSim.App.Middleware;
 
 /// <summary>
 /// Implements the control-endpoint
 /// </summary>
-internal static class ControlEndpointHelper
+internal static class ControlEndpoint
 {
     public static IEndpointRouteBuilder Map(IEndpointRouteBuilder app, IHttpSimRuleStore ruleStore, string responseFilesFolder, ILogger logger)
     {

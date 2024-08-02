@@ -2,6 +2,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 
 namespace HttpServerSim.Models;
 
@@ -19,6 +20,7 @@ public class HttpSimRequest(string method, string path) : HttpSimMessage
     public string Method { get; } = method;
     public string Path { get; } = path;
 
+    [JsonIgnore]
     public string? JsonContent
     {
         get

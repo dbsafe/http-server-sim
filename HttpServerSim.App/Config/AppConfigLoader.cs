@@ -3,35 +3,8 @@
 using System.Configuration;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
-namespace HttpServerSim;
-
-public class AppConfig
-{
-    private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
-    {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
-
-    public string? Rules { get; set; }
-    public string? Url { get; set; } = "http://localhost:5000";
-    public string? ControlUrl { get; set; }
-    public bool LogControlRequestAndResponse { get; set; }
-    public bool LogRequestAndResponse { get; set; } = true;
-    public string CurrentDirectory { get; } = Environment.CurrentDirectory;
-    
-    [JsonIgnore]
-    public string? ResponseFilesFolder { get; set; }
-    [JsonIgnore]
-    public bool IsDebugMode { get; set; }
-
-    public override string ToString() => JsonSerializer.Serialize(this, _jsonSerializerOptions);
-
-    public static string[] ExpectedOptions { get; } = [nameof(Rules), nameof(Url)];
-}
+namespace HttpServerSim.App.Config;
 
 public class AppConfigLoader
 {
@@ -114,56 +87,6 @@ public class AppConfigLoader
 
         // Use current directory for now. In the future it could be passed as an option and fall back to the current directory
         appConfig.ResponseFilesFolder = appConfig.CurrentDirectory;
-    }
-}
-
-public static class CommandLineHelper
-{
-    public static bool IsDebugMode(string[] args) => GetValueFromArgs(args, "Logging:LogLevel:HttpServerSim")?.CompareTo("Debug") == 0;
-
-    public static bool IsHelpMode(string[] args) => GetValueFromArgs(args, "Help")?.CompareTo("Help") == 0;
-
-    public static string? GetValueFromArgs(string[] args, string name)
-    {
-        var list = ParseArgs(args);
-        return list.FirstOrDefault(a => a.Key == name).Value;
-    }
-
-    private static List<KeyValuePair<string, string>> ParseArgs(string[] args)
-    {
-        var list = new List<KeyValuePair<string, string>>();
-
-        string? lastKey = null;
-        foreach (var arg in args)
-        {
-            if (arg.StartsWith("--"))
-            {
-                if (lastKey is not null)
-                {
-                    list.Add(new KeyValuePair<string, string>(lastKey, lastKey));
-                }
-
-                lastKey = arg[2..];
-                continue;
-            }
-
-            if (lastKey is not null)
-            {
-                list.Add(new KeyValuePair<string, string>(lastKey, arg));
-                lastKey = null;
-            }
-            else
-            {
-                list.Add(new KeyValuePair<string, string>(arg, arg));
-            }
-        }
-
-        if (lastKey is not null)
-        {
-            list.Add(new KeyValuePair<string, string>(lastKey, lastKey));
-        }
-
-        return list;
     }
 }
 

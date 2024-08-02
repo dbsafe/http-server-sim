@@ -1,9 +1,10 @@
 ﻿// Ignore Spelling: Api app
 
-using HttpServerSim.App.Logger;
+using HttpServerSim.App.Config;
+using HttpServerSim.App.Middleware;
+using HttpServerSim.App.Rules;
 using HttpServerSim.Contracts;
 using HttpServerSim.Models;
-using HttpServerSim.SelfHosted;
 using Microsoft.AspNetCore.HttpLogging;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
@@ -25,9 +26,15 @@ public sealed class ApiHttpSimServer : IDisposable
 
     public ApiHttpSimServer(string[] args, AppConfig appConfig)
     {
-        _httpSimRuleResolver = new HttpSimRuleResolver(_ruleStore);
+        _httpSimRuleResolver = new App.Rules.HttpSimRuleResolver(_ruleStore);
         
-        _httpSimApp = BuildHttpSimApplication(args, isControlEndpoint: false, appConfig => appConfig.LogRequestAndResponse, appConfig!);
+        _httpSimApp = BuildHttpSimApplication(args, isControlEndpoint: false, useHttpLogging: false);
+        var _requestResponseLogger = new ConsoleRequestResponseLogger(_httpSimApp.Logger, new ConsoleRequestResponseLoggerConfig());
+        if (appConfig.LogRequestAndResponse)
+        {
+            _httpSimApp.UseRequestResponseLogger(_requestResponseLogger);
+        }
+        
         _httpSimApp.UseHttpSimRuleResolver(_httpSimRuleResolver, _httpSimApp.Logger, appConfig.ResponseFilesFolder!);
 
         var ruleLoaded = TryLoadRulesConfig(appConfig, _httpSimApp.Logger, out RulesConfig? rulesConfig);
@@ -41,15 +48,48 @@ public sealed class ApiHttpSimServer : IDisposable
         // Start control endpoint only when the url is present
         if (!string.IsNullOrEmpty(appConfig.ControlUrl))
         {
-            _controlApp = BuildHttpSimApplication(args, isControlEndpoint: true, appConfig => appConfig.LogControlRequestAndResponse, appConfig);
+            _controlApp = BuildHttpSimApplication(args, isControlEndpoint: true, useHttpLogging: appConfig.LogControlRequestAndResponse);
             _controlApp.MapControlEndpoints(_ruleStore, appConfig.ResponseFilesFolder!, _controlApp.Logger);
             _controlApp.Urls.Add(appConfig.ControlUrl!);
         }
     }
 
-    private static WebApplication BuildHttpSimApplication(string[] args, bool isControlEndpoint, Func<AppConfig, bool> getLogRequestAndResponse, AppConfig appConfig)
+    private static WebApplication BuildHttpSimApplication(string[] args, bool isControlEndpoint, bool useHttpLogging)
     {
         var builder = WebApplication.CreateBuilder(args);
+        ConfigureHttpJsonOptionsForControlEndpoint(builder, isControlEndpoint);
+
+        builder.Logging.ClearProviders();
+        builder.Logging.AddConsole();
+
+        ConfigureHttpLogging(builder, useHttpLogging);
+
+        var app = builder.Build();
+        if (useHttpLogging)
+        {
+            app.UseHttpLogging();
+        }
+
+        return app;
+    }
+
+    private static void ConfigureHttpLogging(WebApplicationBuilder builder, bool useHttpLogging)
+    {
+        if (useHttpLogging)
+        {
+            builder.Services.AddHttpLogging(logging =>
+            {
+                logging.LoggingFields = HttpLoggingFields.All & ~(HttpLoggingFields.RequestHeaders | HttpLoggingFields.ResponseHeaders);
+                //logging.LoggingFields = HttpLoggingFields.All;
+                logging.RequestBodyLogLimit = 4096;
+                logging.ResponseBodyLogLimit = 4096;
+                //logging.CombineLogs = true;
+            });
+        }
+    }
+
+    private static void ConfigureHttpJsonOptionsForControlEndpoint(WebApplicationBuilder builder, bool isControlEndpoint)
+    {
         if (isControlEndpoint)
         {
             builder.Services.ConfigureHttpJsonOptions(options =>
@@ -58,44 +98,6 @@ public sealed class ApiHttpSimServer : IDisposable
                 options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             });
         }
-
-        builder.Logging.ClearProviders();
-
-        if (getLogRequestAndResponse.Invoke(appConfig))
-        {
-            AddCustomColorFormatter(builder, isControlEndpoint);
-        }
-        else
-        {
-            builder.Logging.AddConsole();
-        }
-
-        var app = builder.Build();
-        if (getLogRequestAndResponse.Invoke(appConfig))
-        {
-            app.UseHttpLogging();
-        }
-
-        return app;
-    }
-
-    private static void AddCustomColorFormatter(WebApplicationBuilder builder, bool isControlEndpoint)
-    {
-        builder.Logging.AddCustomColorFormatter(options =>
-        {
-            options.IsControlEndpoint = isControlEndpoint;
-        });
-
-        builder.Services.AddHttpLogging(logging =>
-        {
-            logging.LoggingFields = HttpLoggingFields.All & ~(HttpLoggingFields.RequestHeaders | HttpLoggingFields.ResponseHeaders);
-            //logging.LoggingFields = HttpLoggingFields.All;
-            logging.RequestBodyLogLimit = 4096;
-            logging.ResponseBodyLogLimit = 4096;
-            //logging.CombineLogs = true;
-        });
-
-        builder.Services.AddHttpLoggingInterceptor<HttpLoggingInterceptor>();
     }
 
     public void Dispose()

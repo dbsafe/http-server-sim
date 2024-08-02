@@ -1,3 +1,64 @@
 {
-  "rules": []
+  "rules": [
+    {
+      "name": "simple-request",
+      "conditions": [
+        {
+          "field": "Path",
+          "operator": "Contains",
+          "value": "simple-request"
+        }
+      ],
+      "response": {
+      }
+    },
+    {
+      "name": "simple-response",
+      "conditions": [
+        {
+          "field": "Path",
+          "operator": "Contains",
+          "value": "simple-response"
+        }
+      ],
+      "response": {
+      }
+    },
+    {
+      "name": "response-with-headers",
+      "conditions": [
+        {
+          "field": "Path",
+          "operator": "Contains",
+          "value": "response-with-headers"
+        }
+      ],
+      "response": {
+        "headers": [
+          {
+            "key": "header-1",
+            "value": [ "value-1" ]
+          },
+          {
+            "key": "header-2",
+            "value": [ "value-21", "value-22" ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "get-response-with-json-content",
+      "conditions": [
+        {
+          "field": "Path",
+          "operator": "Contains",
+          "value": "response-with-json-content"
+        }
+      ],
+      "response": {
+        "contentType": "application/json",
+        "contentValue": "{\"name\":\"Juan\"}"
+      }
+    }
+  ]
 }
