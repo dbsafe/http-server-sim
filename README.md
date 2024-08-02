@@ -64,20 +64,25 @@ returns 404 with content `Rule matching request not found`
 http-server-sim output:
 ```bash
 Request:
-Accept: */*
-Host: localhost:5000
-User-Agent: curl/8.7.1
-Protocol: HTTP/1.1
-Method: GET
-Scheme: http
-PathBase:
-Path: /customers
+HTTP/1.1 - GET - http://localhost:5000/customers
+Headers:
+  Accept: */*
+  Host: localhost:5000
+  User-Agent: curl/8.7.1
+Body:
+[Not present]
+End of Request
 
-warn - HttpServerSim.App
-Rule matching request not found.
+warn: HttpServerSim.App[0]
+      Rule matching request not found.
 
 Response:
-StatusCode: 404
+Status Code: 404
+Headers:
+[Not present]
+Body:
+Rule matching request not found
+End of Response
 ```
 
 ### http-server-sim CLI options
