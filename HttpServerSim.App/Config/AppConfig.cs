@@ -27,7 +27,6 @@ public class AppConfig : IConsoleRequestResponseLoggerConfig
     [JsonIgnore]
     public bool IsDebugMode { get; set; }
 
+    // This is used when logging the current configuration
     public override string ToString() => JsonSerializer.Serialize(this, _jsonSerializerOptions);
-
-    public static string[] ExpectedOptions { get; } = [nameof(Rules), nameof(Url)];
 }
