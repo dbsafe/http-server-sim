@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace HttpServerSim.App.Config;
 
-public class AppConfig
+public class AppConfig : IConsoleRequestResponseLoggerConfig
 {
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
@@ -19,6 +19,8 @@ public class AppConfig
     public bool LogControlRequestAndResponse { get; set; }
     public bool LogRequestAndResponse { get; set; } = true;
     public string CurrentDirectory { get; } = Environment.CurrentDirectory;
+    public int RequestBodyLogLimit { get; set; } = 4096;
+    public int ResponseBodyLogLimit { get; set; } = 4096;
 
     [JsonIgnore]
     public string? ResponseFilesFolder { get; set; }
