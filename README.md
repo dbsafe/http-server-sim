@@ -93,6 +93,8 @@ End of Response
 | --Help                           | Prints the help.                                                                                  |
 | --LogControlRequestAndResponse   | Whether control requests and responses are logged. Default: `false`.                              |
 | --LogRequestAndResponse          | Whether requests and responses are logged. Default: `true`.                                       |
+| --RequestBodyLogLimit `<limit>`  | Maximum request body size to log (in bytes). Default: 4096.                                       |
+| --ResponseBodyLogLimit `<limit>` | Maximum response body size to log (in bytes). Default: 4096.                                      |
 | --Rules `<file-name> \| <path>`  | Rules file. It can be a file name of a file that exists in the current directory or a full path to a file. |
 | --Url `<url>`                    | URL for simulating endpoints. Default: `http://localhost:5000`.                                   |
 |                                  | `--Url` and `--ControlUrl` cannot share the same value.                                           |
