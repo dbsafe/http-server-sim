@@ -17,10 +17,16 @@ public class AppConfigLoader
 
         sb.AppendLine($"{PadRight("--ControlUrl <url>")}URL for managing rules dynamically. Not required. Example: http://localhost:5001.");
         sb.AppendLine($"{PadRight("--Help")}Prints this help.");
+        
         sb.AppendLine($"{PadRight("--LogControlRequestAndResponse")}Whether control requests and responses are logged. Default: false.");
         sb.AppendLine($"{PadRight("--LogRequestAndResponse")}Whether requests and responses are logged. Default: true.");
+
+        sb.AppendLine($"{PadRight("--RequestBodyLogLimit <limit>")}Maximum request body size to log (in bytes). Default: 4096.");
+        sb.AppendLine($"{PadRight("--ResponseBodyLogLimit <limit>")}Maximum response body size to log (in bytes). Default: 4096.");
+
         sb.AppendLine($"{PadRight("--Rules <file-name> | <path>")}Rules file. It can be a file name of a file that exists in the current directory or a full path to a file.");
         sb.AppendLine($"{PadRight("--Url <url>")}URL for simulating endpoints. Default: http://localhost:5000.");
+
         sb.AppendLine($"{PadRight("")}--Url and --ControlUrl cannot share the same value.");
 
         Console.WriteLine(sb.ToString());
