@@ -28,8 +28,8 @@ public sealed class ApiHttpSimServer : IDisposable
     {
         _httpSimRuleResolver = new App.Rules.HttpSimRuleResolver(_ruleStore);
         
-        _httpSimApp = BuildHttpSimApplication(args, isControlEndpoint: false, useHttpLogging: false);
-        var _requestResponseLogger = new ConsoleRequestResponseLogger(_httpSimApp.Logger, new ConsoleRequestResponseLoggerConfig());
+        _httpSimApp = BuildHttpSimApplication(args, isControlEndpoint: false, useHttpLogging: false, appConfig.RequestBodyLogLimit, appConfig.ResponseBodyLogLimit);
+        var _requestResponseLogger = new ConsoleRequestResponseLogger(_httpSimApp.Logger, appConfig);
         if (appConfig.LogRequestAndResponse)
         {
             _httpSimApp.UseRequestResponseLogger(_requestResponseLogger);
@@ -48,13 +48,13 @@ public sealed class ApiHttpSimServer : IDisposable
         // Start control endpoint only when the url is present
         if (!string.IsNullOrEmpty(appConfig.ControlUrl))
         {
-            _controlApp = BuildHttpSimApplication(args, isControlEndpoint: true, useHttpLogging: appConfig.LogControlRequestAndResponse);
+            _controlApp = BuildHttpSimApplication(args, isControlEndpoint: true, useHttpLogging: appConfig.LogControlRequestAndResponse, appConfig.RequestBodyLogLimit, appConfig.ResponseBodyLogLimit);
             _controlApp.MapControlEndpoints(_ruleStore, appConfig.ResponseFilesFolder!, _controlApp.Logger);
             _controlApp.Urls.Add(appConfig.ControlUrl!);
         }
     }
 
-    private static WebApplication BuildHttpSimApplication(string[] args, bool isControlEndpoint, bool useHttpLogging)
+    private static WebApplication BuildHttpSimApplication(string[] args, bool isControlEndpoint, bool useHttpLogging, int requestBodyLogLimit, int responseBodyLogLimit)
     {
         var builder = WebApplication.CreateBuilder(args);
         ConfigureHttpJsonOptionsForControlEndpoint(builder, isControlEndpoint);
@@ -62,7 +62,7 @@ public sealed class ApiHttpSimServer : IDisposable
         builder.Logging.ClearProviders();
         builder.Logging.AddConsole();
 
-        ConfigureHttpLogging(builder, useHttpLogging);
+        ConfigureHttpLogging(builder, useHttpLogging, requestBodyLogLimit, responseBodyLogLimit);
 
         var app = builder.Build();
         if (useHttpLogging)
@@ -73,7 +73,7 @@ public sealed class ApiHttpSimServer : IDisposable
         return app;
     }
 
-    private static void ConfigureHttpLogging(WebApplicationBuilder builder, bool useHttpLogging)
+    private static void ConfigureHttpLogging(WebApplicationBuilder builder, bool useHttpLogging, int requestBodyLogLimit, int responseBodyLogLimit)
     {
         if (useHttpLogging)
         {
@@ -81,8 +81,8 @@ public sealed class ApiHttpSimServer : IDisposable
             {
                 logging.LoggingFields = HttpLoggingFields.All & ~(HttpLoggingFields.RequestHeaders | HttpLoggingFields.ResponseHeaders);
                 //logging.LoggingFields = HttpLoggingFields.All;
-                logging.RequestBodyLogLimit = 4096;
-                logging.ResponseBodyLogLimit = 4096;
+                logging.RequestBodyLogLimit = requestBodyLogLimit;
+                logging.ResponseBodyLogLimit = responseBodyLogLimit;
                 //logging.CombineLogs = true;
             });
         }

@@ -5,13 +5,13 @@ using System.Text;
 
 namespace HttpServerSim;
 
-public class ConsoleRequestResponseLoggerConfig
+public interface IConsoleRequestResponseLoggerConfig
 {
-    public int RequestBodyLogLimit { get; set; } = 4096;
-    public int ResponseBodyLogLimit { get; set; } = 4096;
+    int RequestBodyLogLimit { get; }
+    int ResponseBodyLogLimit { get; }
 }
 
-public class ConsoleRequestResponseLogger(ILogger appLogger, ConsoleRequestResponseLoggerConfig config) : IRequestResponseLogger
+public class ConsoleRequestResponseLogger(ILogger appLogger, IConsoleRequestResponseLoggerConfig config) : IRequestResponseLogger
 {
     public ILogger AppLogger { get; } = appLogger;
 
@@ -35,7 +35,7 @@ public class ConsoleRequestResponseLogger(ILogger appLogger, ConsoleRequestRespo
         }
         catch (Exception ex)
         {
-            AppLogger.LogError($"Error while logging a request ot the Console.{Environment.NewLine}{ex}");
+            AppLogger.LogError($"Error while logging a request to the Console.{Environment.NewLine}{ex}");
         }
     }
 
@@ -99,7 +99,7 @@ public class ConsoleRequestResponseLogger(ILogger appLogger, ConsoleRequestRespo
         }
         catch (Exception ex)
         {
-            AppLogger.LogError($"Error while logging a response ot the Console.{Environment.NewLine}{ex}");
+            AppLogger.LogError($"Error while logging a response to the Console.{Environment.NewLine}{ex}");
         }
     }
 
