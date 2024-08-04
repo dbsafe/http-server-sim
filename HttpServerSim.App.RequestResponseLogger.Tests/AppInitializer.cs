@@ -2,6 +2,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 
@@ -28,13 +29,55 @@ namespace HttpServerSim.App.RequestResponseLogger.Tests
             var relativePath = "../../../../HttpServerSim.App";
             var projectDirectory = Path.GetFullPath(relativePath, testDirectory);
 
-            _consoleAppRunner = new ConsoleAppRunner(projectDirectory, "dotnet", $"run");
+            // `dotnet run` (without args) uses the args used in launchSettings.json
+            _consoleAppRunner = new ConsoleAppRunner(projectDirectory, "dotnet", $"run --Rules rules.json --RequestBodyLogLimit 51 --ResponseBodyLogLimit 52");
             _consoleAppRunner.OutputDataReceived += ConsoleAppRunner_OutputDataReceived;
             _consoleAppRunner.ErrorDataReceived += ConsoleAppRunner_OutputDataReceived;
 
             _consoleAppRunner.Start();
 
             Assert.IsTrue(WaitForServiceUsingARequest(_consoleAppRunner, TimeSpan.FromSeconds(10), _testContext), "Service was not ready");
+        }
+
+        public static bool TryFindSection(string startToken, string endToken, StringBuilder logs, TimeSpan timeout, [NotNullWhen(true)] out string? section)
+        {
+            var expiration = DateTimeOffset.UtcNow + timeout;
+            while (expiration > DateTimeOffset.UtcNow)
+            {
+                while (LogsQueue.TryDequeue(out var log))
+                {
+                    Console.WriteLine(log);
+                    logs.AppendLine(log);
+                }
+
+                var currentLogs = logs.ToString();
+                var startIndex = currentLogs.IndexOf(startToken);
+                var endIndex = currentLogs.IndexOf(endToken);
+
+                if (startIndex == -1 || endIndex == -1)
+                {
+                    Thread.Sleep(100);
+                    continue;
+                }
+
+                if (startIndex > endIndex)
+                {
+                    section = null;
+                    return false;
+                }
+
+                section = currentLogs.Substring(startIndex, endIndex - startIndex + endToken.Length);
+                return true;
+            }
+
+            section = null;
+            return false;
+        }
+
+        private static bool WaitForResponse()
+        {
+            var sb = new StringBuilder();
+            return TryFindSection("Response:", "End of Response", sb, TimeSpan.FromSeconds(5), out _);
         }
 
         private static bool SendSimpleRequest()
@@ -64,9 +107,11 @@ namespace HttpServerSim.App.RequestResponseLogger.Tests
                 var expiration = DateTimeOffset.UtcNow + timeout;
                 while (expiration > DateTimeOffset.UtcNow)
                 {
+                    // Attempt to send request multiple times because the App is initializing
                     if (SendSimpleRequest())
                     {
-                        return true;
+                        // Attempt to get the response only one time because the app is already initialized
+                        return WaitForResponse();
                     }
 
                     Thread.Sleep(100);
@@ -78,47 +123,6 @@ namespace HttpServerSim.App.RequestResponseLogger.Tests
             {
                 consoleAppRunner.OutputDataReceived -= OutputDataReceived;
             }
-
-            
-        }
-
-        private static bool WaitForServiceUsingLogs(ConsoleAppRunner consoleAppRunner, TimeSpan timeout, TestContext testContext)
-        {
-            var logs = new StringBuilder();
-            long foundCount = 0;
-
-            void OutputDataReceived(object sender, DataReceivedEventArgs e)
-            {
-                logs.AppendLine(e.Data);
-                var currentLogs = logs.ToString();
-                Console.WriteLine($"Current Logs: {currentLogs}");
-                
-                if (currentLogs.Contains("Now listening on: http://localhost:5000"))
-                {
-                    Interlocked.Increment(ref foundCount);
-                }
-            }
-
-            consoleAppRunner.OutputDataReceived += OutputDataReceived;
-            try
-            {
-                var expiration = DateTimeOffset.UtcNow + timeout;
-                while (expiration > DateTimeOffset.UtcNow)
-                {
-                    if (Interlocked.Read(ref foundCount) > 0)
-                    {
-                        return true;
-                    }
-
-                    Thread.Sleep(100);
-                }
-            }
-            finally
-            {
-                consoleAppRunner.OutputDataReceived -= OutputDataReceived;
-            }
-
-            return false;
         }
 
         [AssemblyCleanup]

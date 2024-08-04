@@ -1,6 +1,5 @@
 // Ignore Spelling: json
 
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Json;
 using System.Text;
 
@@ -76,6 +75,27 @@ End of Request";
     }
 
     [TestMethod]
+    public async Task Request_Given_a_request_with_a_body_larger_than_the_limit_Body_should_be_truncated()
+    {
+        string body = "111111111122222222223333333333444444444455555555556666666666";
+        await _httpClient.PostAsJsonAsync($"{_simulatorUrl}/simple-request", body);
+
+        LoadRequestLogAndResponseLog();
+
+        var expectedRequestLog = @"Request:
+HTTP/1.1 - POST - http://localhost:5000/simple-request
+Headers:
+  Host: localhost:5000
+  Content-Type: application/json; charset=utf-8
+  Transfer-Encoding: chunked
+Body:
+""11111111112222222222333333333344444444445555555555
+[Body truncated. Read 51 characters]
+End of Request";
+        Assert.AreEqual(expectedRequestLog, _actualRequestLog);
+    }
+
+    [TestMethod]
     public async Task ResponseLog_Simple_response()
     {
         await _httpClient.GetAsync($"{_simulatorUrl}/simple-response");
@@ -124,12 +144,29 @@ End of Response";
         Assert.AreEqual(expectedResponseLog, _actualResponseLog);
     }
 
+    [TestMethod]
+    public async Task ResponseLog_Given_a_response_with_a_body_larger_than_the_limit_Body_should_be_truncated()
+    {
+        await _httpClient.GetAsync($"{_simulatorUrl}/get-response-with-large-json-content");
+        LoadRequestLogAndResponseLog();
+
+        var expectedResponseLog = @"Response:
+Status Code: 200
+Headers:
+  Content-Type: application/json
+Body:
+""111111111122222222223333333333444444444455555555556
+[Body truncated. Read 52 characters]
+End of Response";
+        Assert.AreEqual(expectedResponseLog, _actualResponseLog);
+    }
+
     private void LoadRequestLogAndResponseLog()
     {
         var sb = new StringBuilder();
 
-        Assert.IsTrue(TryFindSection("Request:", "End of Request", sb, _timeout, out _actualRequestLog), "Request log not found");
-        Assert.IsTrue(TryFindSection("Response:", "End of Response", sb, _timeout, out _actualResponseLog), "Response log not found");
+        Assert.IsTrue(AppInitializer.TryFindSection("Request:", "End of Request", sb, _timeout, out _actualRequestLog), "Request log not found");
+        Assert.IsTrue(AppInitializer.TryFindSection("Response:", "End of Response", sb, _timeout, out _actualResponseLog), "Response log not found");
     }
 
     private static void FlushLogs()
@@ -138,40 +175,5 @@ End of Response";
         {
             Console.WriteLine(log);
         }
-    }
-
-    private static bool TryFindSection(string startToken, string endToken, StringBuilder logs, TimeSpan timeout, [NotNullWhen(true)] out string? section)
-    {
-        var expiration = DateTimeOffset.UtcNow + timeout;
-        while (expiration > DateTimeOffset.UtcNow)
-        {
-            while (AppInitializer.LogsQueue.TryDequeue(out var log))
-            {
-                Console.WriteLine(log);
-                logs.AppendLine(log);
-            }
-
-            var currentLogs = logs.ToString();
-            var startIndex = currentLogs.IndexOf(startToken);
-            var endIndex = currentLogs.IndexOf(endToken);
-
-            if (startIndex == -1 || endIndex == -1)
-            {
-                Thread.Sleep(100);
-                continue;
-            }
-
-            if (startIndex > endIndex)
-            {
-                section = null;
-                return false;
-            }
-
-            section = currentLogs.Substring(startIndex, endIndex - startIndex + endToken.Length);
-            return true;
-        }
-
-        section = null;
-        return false;
     }
 }
