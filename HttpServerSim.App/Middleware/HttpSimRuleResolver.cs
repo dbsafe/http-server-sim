@@ -23,17 +23,15 @@ internal static class HttpSimRuleResolver
             var originalResponseBody = context.Response.Body;
             try
             {
-                using (var ms = new MemoryStream())
-                {
-                    context.Response.Body = ms;
+                using var ms = new MemoryStream();
+                context.Response.Body = ms;
 
-                    await next(context);
+                await next(context);
 
-                    ms.Position = 0;
-                    await requestResponseLogger.LogResponseAsync(context);
-                    ms.Position = 0;
-                    await ms.CopyToAsync(originalResponseBody);
-                }
+                ms.Position = 0;
+                await requestResponseLogger.LogResponseAsync(context);
+                ms.Position = 0;
+                await ms.CopyToAsync(originalResponseBody);
             }
             finally
             {
