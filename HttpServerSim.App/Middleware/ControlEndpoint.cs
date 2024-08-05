@@ -48,7 +48,7 @@ internal static class ControlEndpoint
         {
             return ExecuteProtected(logger, () =>
             {
-                RulesConfigExtension.LoadRules(rules, responseFilesFolder, ruleStore, logger);
+                RulesConfigHelper.LoadRules(rules, responseFilesFolder, ruleStore, logger);
                 logger.LogDebug($"Created rules '{string.Join(',', rules.Select(r => r.Name))}'");
                 return OperationResult.CreateSuccess();
             });

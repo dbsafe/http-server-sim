@@ -21,6 +21,9 @@ public class AppConfig : IConsoleRequestResponseLoggerConfig
     public string CurrentDirectory { get; } = Environment.CurrentDirectory;
     public int RequestBodyLogLimit { get; set; } = 4096;
     public int ResponseBodyLogLimit { get; set; } = 4096;
+    public int DefaultStatusCode { get; set; } = 200;
+    public string? DefaultContentType { get; set; }
+    public string? DefaultContentValue { get; set; }
 
     [JsonIgnore]
     public string? ResponseFilesFolder { get; set; }
