@@ -13,12 +13,10 @@ public class RequestResponseLoggerTest
     private string? _actualRequestLog;
     private string? _actualResponseLog;
 
-    private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(5);
-
     [TestInitialize]
     public void TestInitialize()
     {
-        FlushLogs();
+        AppInitializer.FlushLogs();
     }
 
     [TestMethod]
@@ -165,15 +163,7 @@ End of Response";
     {
         var sb = new StringBuilder();
 
-        Assert.IsTrue(AppInitializer.TryFindSection("Request:", "End of Request", sb, _timeout, out _actualRequestLog), "Request log not found");
-        Assert.IsTrue(AppInitializer.TryFindSection("Response:", "End of Response", sb, _timeout, out _actualResponseLog), "Response log not found");
-    }
-
-    private static void FlushLogs()
-    {
-        while (AppInitializer.LogsQueue.TryDequeue(out var log))
-        {
-            Console.WriteLine(log);
-        }
+        Assert.IsTrue(AppInitializer.TryFindSection("Request:", "End of Request", sb, out _actualRequestLog), "Request log not found");
+        Assert.IsTrue(AppInitializer.TryFindSection("Response:", "End of Response", sb, out _actualResponseLog), "Response log not found");
     }
 }

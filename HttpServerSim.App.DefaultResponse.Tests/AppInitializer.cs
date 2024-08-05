@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 
-namespace HttpServerSim.App.RequestResponseLogger.Tests;
+namespace HttpServerSim.App.DefaultResponse.Tests;
 
 [TestClass]
 public static class AppInitializer
@@ -29,7 +29,7 @@ public static class AppInitializer
         var projectDirectory = Path.GetFullPath(relativePath, testDirectory);
 
         // `dotnet run` (without args) uses the args used in launchSettings.json
-        _testHost = new HttpServerSimHost(SimulatorUrl, projectDirectory, "dotnet", $"run --Rules rules.json --RequestBodyLogLimit 51 --ResponseBodyLogLimit 52");
+        _testHost = new HttpServerSimHost(SimulatorUrl, projectDirectory, "dotnet", $"run --Rules rules.json --DefaultContentValue \"moved\" --DefaultContentType text/plain --DefaultStatusCode 301");
         _testHost.Start();
     }
 
