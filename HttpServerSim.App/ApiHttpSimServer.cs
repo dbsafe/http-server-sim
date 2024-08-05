@@ -34,8 +34,9 @@ public sealed class ApiHttpSimServer : IDisposable
         {
             _httpSimApp.UseRequestResponseLogger(_requestResponseLogger);
         }
-        
-        _httpSimApp.UseHttpSimRuleResolver(_httpSimRuleResolver, _httpSimApp.Logger, appConfig.ResponseFilesFolder!);
+
+        var defaultResponse = BuildDefaultResponse(appConfig, _httpSimApp.Logger);
+        _httpSimApp.UseHttpSimRuleResolver(_httpSimRuleResolver, _httpSimApp.Logger, appConfig.ResponseFilesFolder!, defaultResponse);
 
         var ruleLoaded = TryLoadRulesConfig(appConfig, _httpSimApp.Logger, out RulesConfig? rulesConfig);
         if (ruleLoaded)
@@ -52,6 +53,24 @@ public sealed class ApiHttpSimServer : IDisposable
             _controlApp.MapControlEndpoints(_ruleStore, appConfig.ResponseFilesFolder!, _controlApp.Logger);
             _controlApp.Urls.Add(appConfig.ControlUrl!);
         }
+    }
+
+
+    private static HttpSimResponse BuildDefaultResponse(AppConfig appConfig, ILogger logger)
+    {
+        var configRule = new ConfigRule
+        {
+            Name = "default-response-builder",
+            Response = new HttpSimResponse
+            {
+                ContentType = appConfig.DefaultContentType,
+                ContentValue = appConfig.DefaultContentValue,
+                ContentValueType = ContentValueType.Text,
+                StatusCode = appConfig.DefaultStatusCode
+            }
+        };
+
+        return RulesConfigHelper.BuildResponseFromRule(logger, configRule, string.Empty) ?? throw new InvalidOperationException($"{nameof(HttpSimResponse)} should not be null here.");
     }
 
     private static WebApplication BuildHttpSimApplication(string[] args, bool isControlEndpoint, bool useHttpLogging, int requestBodyLogLimit, int responseBodyLogLimit)

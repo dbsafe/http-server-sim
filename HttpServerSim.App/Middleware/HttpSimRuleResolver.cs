@@ -45,8 +45,10 @@ internal static class HttpSimRuleResolver
     /// <summary>
     /// Creates middleware for finding a rule that matches a request.
     /// </summary>
-    public static Func<HttpContext, RequestDelegate, Task> CreateMiddlewareHandleRequest(IHttpSimRuleResolver httpSimRuleResolver, ILogger logger, string responseFilesFolder)
+    public static Func<HttpContext, RequestDelegate, Task> CreateMiddlewareHandleRequest(IHttpSimRuleResolver httpSimRuleResolver, ILogger logger, string responseFilesFolder, HttpSimResponse defaultResponse)
     {
+        ArgumentNullException.ThrowIfNull(defaultResponse);
+
         return async (context, next) =>
         {
             var isRequestForControlEndpoint = context.Request.Path.ToString().Contains(Routes.CONTROL_ENDPOINT, StringComparison.InvariantCultureIgnoreCase);
@@ -61,8 +63,8 @@ internal static class HttpSimRuleResolver
 
             if (httpSimRule == null)
             {
-                logger.LogWarning("Rule matching request not found.");
-                await RuleNotFoundAsync(context);
+                logger.LogDebug("Rule matching request not found. Using the default response");
+                await SetHttpResponseAsync(context, defaultResponse, logger, responseFilesFolder);
                 return;
             }
 
@@ -160,12 +162,6 @@ internal static class HttpSimRuleResolver
             var values = new StringValues(sourceHeader.Value);
             context.Response.Headers[sourceHeader.Key] = values;
         }
-    }
-
-    private static async Task RuleNotFoundAsync(HttpContext context)
-    {
-        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-        await context.Response.WriteAsync("Rule matching request not found");
     }
 
     private static async Task<HttpSimRequest> MapRequestAsync(HttpRequest request)
