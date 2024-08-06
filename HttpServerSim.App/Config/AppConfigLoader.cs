@@ -16,6 +16,11 @@ public class AppConfigLoader
         sb.AppendLine("Usage: http-server-sim [options...]");
 
         sb.AppendLine($"{PadRight("--ControlUrl <url>")}URL for managing rules dynamically. Not required. Example: http://localhost:5001.");
+
+        sb.AppendLine($"{PadRight("--DefaultContentType <value>")}The Content-Type used in a response message when no rule matching the request is found.");
+        sb.AppendLine($"{PadRight("--DefaultContentValue <value>")}The Content used in a response message when no rule matching the request is found.");
+        sb.AppendLine($"{PadRight("--DefaultStatusCode <value>")}The HTTP status code used in a response message when no rule matching the request is found. Default: 200.");
+
         sb.AppendLine($"{PadRight("--Help")}Prints this help.");
         
         sb.AppendLine($"{PadRight("--LogControlRequestAndResponse")}Whether control requests and responses are logged. Default: false.");

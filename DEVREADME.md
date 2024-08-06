@@ -34,7 +34,10 @@ Builds packages from all projects setting the version in the dll and in the pack
 
 Builds one package for one project:</p>
 `dotnet pack .\HttpServerSim.App\HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.8.0 -p:Version=0.8.0 --output C:\LocalNuget`
-`dotnet pack .\HttpServerSim.App\HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.11.0 -p:Version=0.11.0 --output ./HttpServerSim.App/nupkg`
+`dotnet pack .\HttpServerSim.App\HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.12.0 -p:Version=0.12.0 --output ./HttpServerSim.App/nupkg`
+
+Using this for local test
+`dotnet build /warnaserror --configuration Release -p:Version=1.0.0.1 -p:PackageVersion=1.0.0.1 -p:PackageOutputPath=./nupkg`
 
 Read more here
 [Source Link](https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/sourcelink)
@@ -43,7 +46,8 @@ Read more here
 ### Install http-server-sim as global tool
 
 #### Install local build version
-`dotnet tool install -g --add-source ./HttpServerSim.App/nupkg http-server-sim --version 1.0.0`
+`dotnet tool install -g --add-source ./HttpServerSim.App/nupkg http-server-sim --version 1.0.0.1`
+
 
 ### List installed dotnet tools
 

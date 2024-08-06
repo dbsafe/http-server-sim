@@ -6,7 +6,8 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
-      "commandLineArgs": "--Rules rules.json --ControlUrl http://localhost:5001 --LogControlRequestAndResponse false --LogRequestAndResponse true --Logging:LogLevel:HttpServerSim Information"
+      //"commandLineArgs": "--Rules rules.json --ControlUrl http://localhost:5001 --LogControlRequestAndResponse false --LogRequestAndResponse true --Logging:LogLevel:HttpServerSim Information"
+      "commandLineArgs": "--DefaultContentType application/json --DefaultContentValue \"{\"name\":\"Juan\"}\" --Logging:LogLevel:HttpServerSim Debug"
       //"commandLineArgs": "--Logging:LogLevel:HttpServerSim Debug --Rules rules.json --ControlUrl http://localhost:5001",
       //"commandLineArgs": "--Help",
       //"workingDirectory": "C:\\http-server-sim-demo"

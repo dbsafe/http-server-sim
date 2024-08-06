@@ -8,6 +8,8 @@ var isDebugMode = CommandLineHelper.IsDebugMode(args);
 if (isDebugMode)
 {
     Console.WriteLine("Executing in debug mode");
+    Console.WriteLine($"CommandLine: {Environment.CommandLine}");
+    Console.WriteLine($"ProcessPath: {Environment.ProcessPath}");
     Console.WriteLine($"CurrentDirectory: {Environment.CurrentDirectory}");
 }
 

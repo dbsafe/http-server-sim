@@ -13,13 +13,78 @@ Install the latest version from NuGet:
 ```bash
 dotnet tool install --global http-server-sim
 ```
-Once http-server-sim is installed as a global tool, it can be executed from any folder.
+Once `http-server-sim` is installed as a global tool, it can run from any folder.
 For other versions and more information, visit [NuGet](https://www.nuget.org/packages/http-server-sim) and [dotnet tool install](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-tool-install).
+
+### Running http-server-sim
+
+**Running `http-server-sim` using default options:**
+```bash
+# Start the simulator
+http-server-sim
+```
+
+```bash
+# Send a GET request to the simulator from another terminal
+curl --location 'http://localhost:5000/data' -v
+```
+
+Simulator output
+```bash
+Request:
+HTTP/1.1 - GET - http://localhost:5000/data
+Headers:
+  Accept: */*
+  Host: localhost:5000
+  User-Agent: curl/8.7.1
+Body:
+[Not present]
+End of Request
+
+
+Response:
+Status Code: 200
+Headers:
+[Not present]
+Body:
+[Not present]
+End of Response
+```
+
+`http-server-sim` attempts to match a request to a rule. When a rule is found, it responds with the response defined in that rule. If no matching rule is found, it responds with a configurable `default` response, which has a `Status Code` 200 and no content.
+
+**Running `http-server-sim` setting the default content:**
+```bash
+# Start the simulator setting the default content with a json
+http-server-sim --DefaultContentType application/json --DefaultContentValue "{""name"":""Juan""}"
+```
+
+```bash
+# Send a GET request to the simulator from another terminal
+curl --location 'http://localhost:5000/data' -v
+```
+
+Simulator output
+```bash
+...
+Response:
+Status Code: 200
+Headers:
+  Content-Type: application/json
+Body:
+{"name":"Juan"}
+End of Response
+```
+
+Another example setting the default response indicating that a resource not was found.
+```bash
+http-server-sim --DefaultContentType text/plain --DefaultContentValue "Resource not found" --DefaultStatusCode 404
+```
 
 ### Rule file
 The simulation of endpoints is based on a rule file. Here’s how it can be set up:
 
-1. Create a rule file defining the endpoints and their behaviors.
+1. Create a rule file defining conditions and a response message.
 2. Place the rule file in the appropriate directory.
 3. Run the simulator with the rule file.
 
@@ -42,54 +107,25 @@ Example of rule file.
 }
 ```
 
-Example command (assuming that the file rule.json is in the current folder where the command http-server-sim is being executed):
 ```bash
+# Loading rules from a file in the current directory
 http-server-sim --Rules rules.json
 ```
 
-The following POST request is handled using rule `customers-post`:
 ```bash
+# Send a POST request (will be handled by the rule called customers-post):
 curl --location 'http://localhost:5000/customers' --header 'Content-Type: application/json' --data '{"id":10,"name":"Juan"}' -v
 ```
-`http-server-sim` returns a response with 200. 
-
-
-The following GET request:
-```bash
-curl --location 'http://localhost:5000/customers' -v
-```
-
-returns 404 with content `Rule matching request not found`
-
-http-server-sim output:
-```bash
-Request:
-HTTP/1.1 - GET - http://localhost:5000/customers
-Headers:
-  Accept: */*
-  Host: localhost:5000
-  User-Agent: curl/8.7.1
-Body:
-[Not present]
-End of Request
-
-warn: HttpServerSim.App[0]
-      Rule matching request not found.
-
-Response:
-Status Code: 404
-Headers:
-[Not present]
-Body:
-Rule matching request not found
-End of Response
-```
+`http-server-sim` returns a response with `Status Code` 200. 
 
 ### http-server-sim CLI options
 
 | Option                           | Description                                                                                       |
 |----------------------------------|---------------------------------------------------------------------------------------------------|
 | --ControlUrl `<url>`             | URL for managing rules dynamically. Not required. Example: `http://localhost:5001`.               |
+| --DefaultContentType `<value>`   | The Content-Type used in a response message when no rule matching the request is found.           |
+| --DefaultContentValue `<value>`  | The Content used in a response message when no rule matching the request is found.                |
+| --DefaultStatusCode `<value>`    | The HTTP status code used in a response message when no rule matching the request is found. Default: 200.|
 | --Help                           | Prints the help.                                                                                  |
 | --LogControlRequestAndResponse   | Whether control requests and responses are logged. Default: `false`.                              |
 | --LogRequestAndResponse          | Whether requests and responses are logged. Default: `true`.                                       |
@@ -115,8 +151,8 @@ Example of conditions:
 ```
 
 A rule with these conditions is applied when:
-- The request method is POST, and
-- The URL path contains /customers.
+- The request method is `POST`, **and**
+- The URL path contains `/customers`.
 
 There are two types of conditions, `Method` and `Path`
 
@@ -142,7 +178,7 @@ When `http-server-sim` identifies a rule that matches a request, it prepares a r
 | encoding | Defines an encoding to apply to the content. Default: `None`. Supported values: `GZip`
 ||
 
-Example of a response defining a message with status code 400.
+Example of a response defining a message with `Status Code` 400.
 
 ```json
 "response": {
@@ -150,14 +186,14 @@ Example of a response defining a message with status code 400.
   }
 ```
 
-Example of a response defining a message with status code 200 and headers `Server` (with a single value) and `header-1` (with multiple values)
+Example of a response defining a message with `Status Code` 200 and headers `Server` (with a single value) and `Header-1` (with multiple values)
 
 ```json
 "response": {
   "statusCode": 200,
   "headers": [
     { "key": "Server", "value": ["http-server-sim"] },
-    { "key": "header-1", "value": ["val-1", "val-2"] }
+    { "key": "Header-1", "value": ["val-1", "val-2"] }
   ]
 }
 ```
@@ -190,7 +226,7 @@ Example of a response using an in-line json.
 }
 ```
 
-Example of a response using a json file that exists in the current directory and compressing the content with gzip.
+Example of a response using a json file that exists in the current directory and compressing the content with `gzip`.
 
 ```json
 "response": {
