@@ -1,6 +1,7 @@
 ﻿// Ignore Spelling: Api app
 
 using HttpServerSim.App.Config;
+using HttpServerSim.App.Contracts;
 using HttpServerSim.App.Middleware;
 using HttpServerSim.App.Rules;
 using HttpServerSim.Contracts;
@@ -27,9 +28,14 @@ public sealed class ApiHttpSimServer : IDisposable
     public ApiHttpSimServer(string[] args, AppConfig appConfig)
     {
         _httpSimRuleResolver = new App.Rules.HttpSimRuleResolver(_ruleStore);
-        
+
         _httpSimApp = BuildHttpSimApplication(args, isControlEndpoint: false, useHttpLogging: false, appConfig.RequestBodyLogLimit, appConfig.ResponseBodyLogLimit);
-        var _requestResponseLogger = new ConsoleRequestResponseLogger(_httpSimApp.Logger, appConfig);
+        List<IRequestResponseLoggerPresentation> requestResponseLoggerPresentations =
+        [
+            new ConsoleRequestResponseLoggerPresentation()
+        ];
+
+        var _requestResponseLogger = new RequestResponseLogger(_httpSimApp.Logger, appConfig, requestResponseLoggerPresentations);
         if (appConfig.LogRequestAndResponse)
         {
             _httpSimApp.UseRequestResponseLogger(_requestResponseLogger);
@@ -43,7 +49,7 @@ public sealed class ApiHttpSimServer : IDisposable
         {
             _httpSimApp.UseRulesConfig(rulesConfig!.Rules, appConfig.ResponseFilesFolder!, _ruleStore);
         }
-        
+
         _httpSimApp.Urls.Add(appConfig.Url!);
 
         // Start control endpoint only when the url is present

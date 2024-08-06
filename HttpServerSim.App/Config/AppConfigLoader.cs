@@ -88,7 +88,7 @@ public class AppConfigLoader
         throw new ConfigurationErrorsException($"File '{path}' not found");
     }
 
-    private static string? NormalizeDirectory(string? directory, string currentDirectory)
+    private static string? NormalizeDirectory(string? directory)
     {
         if (directory is null)
         {
@@ -122,8 +122,8 @@ public class AppConfigLoader
         // Use current directory for now. In the future it could be passed as an option and fall back to the current directory
         appConfig.ResponseFilesFolder = appConfig.CurrentDirectory;
 
-        appConfig.SaveResponses = NormalizeDirectory(appConfig.SaveResponses, appConfig.CurrentDirectory);
-        appConfig.SaveRequests = NormalizeDirectory(appConfig.SaveRequests, appConfig.CurrentDirectory);
+        appConfig.SaveResponses = NormalizeDirectory(appConfig.SaveResponses);
+        appConfig.SaveRequests = NormalizeDirectory(appConfig.SaveRequests);
     }
 }
 

@@ -11,10 +11,11 @@ public interface IConsoleRequestResponseLoggerConfig
     int ResponseBodyLogLimit { get; }
 }
 
-public class ConsoleRequestResponseLogger(ILogger appLogger, IConsoleRequestResponseLoggerConfig config) : IRequestResponseLogger
+public class RequestResponseLogger(
+    ILogger appLogger, 
+    IConsoleRequestResponseLoggerConfig config, 
+    IEnumerable<IRequestResponseLoggerPresentation> presentations) : IRequestResponseLogger
 {
-    public ILogger AppLogger { get; } = appLogger;
-
     public async Task LogRequestAsync(HttpContext context)
     {
         try
@@ -31,11 +32,15 @@ public class ConsoleRequestResponseLogger(ILogger appLogger, IConsoleRequestResp
             await AddContentAsync(sb, request, config.RequestBodyLogLimit);
             sb.AppendLine("End of Request");
 
-            Console.WriteLine($"{ConsoleColors.RequestColor}{sb}{ConsoleColors.NormalColor}");
+            var message = sb.ToString();
+            foreach (var presentation in presentations)
+            {
+                presentation.LogRequest(message);
+            }
         }
         catch (Exception ex)
         {
-            AppLogger.LogError($"Error while logging a request to the Console.{Environment.NewLine}{ex}");
+            appLogger.LogError($"Error while logging a request to the Console.{Environment.NewLine}{ex}");
         }
     }
 
@@ -71,7 +76,7 @@ public class ConsoleRequestResponseLogger(ILogger appLogger, IConsoleRequestResp
         }
 
         var size = Math.Min(body.Length, logBodyLimit);
-        sb.AppendLine(body.Substring(0, size));
+        sb.AppendLine(body[..size]);
         var isTruncated = size < body.Length;
         if (isTruncated)
         {
@@ -95,11 +100,15 @@ public class ConsoleRequestResponseLogger(ILogger appLogger, IConsoleRequestResp
             await AddContentAsync(sb, response, config.ResponseBodyLogLimit);
             sb.AppendLine("End of Response");
 
-            Console.WriteLine($"{ConsoleColors.ResponseColor}{sb}{ConsoleColors.NormalColor}");
+            var message = sb.ToString();
+            foreach (var presentation in presentations)
+            {
+                presentation.LogResponse(message);
+            }
         }
         catch (Exception ex)
         {
-            AppLogger.LogError($"Error while logging a response to the Console.{Environment.NewLine}{ex}");
+            appLogger.LogError($"Error while logging a response to the Console.{Environment.NewLine}{ex}");
         }
     }
 
@@ -118,7 +127,7 @@ public class ConsoleRequestResponseLogger(ILogger appLogger, IConsoleRequestResp
         response.Body.Position = 0;
 
         var size = Math.Min(body.Length, logBodyLimit);
-        sb.AppendLine(body.Substring(0, size));
+        sb.AppendLine(body[..size]);
         var isTruncated = size < body.Length;
         if (isTruncated)
         {
