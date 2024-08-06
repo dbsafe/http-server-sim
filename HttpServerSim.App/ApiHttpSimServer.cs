@@ -7,6 +7,7 @@ using HttpServerSim.App.Rules;
 using HttpServerSim.Contracts;
 using HttpServerSim.Models;
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.AspNetCore.Identity;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -28,39 +29,50 @@ public sealed class ApiHttpSimServer : IDisposable
     public ApiHttpSimServer(string[] args, AppConfig appConfig)
     {
         _httpSimRuleResolver = new App.Rules.HttpSimRuleResolver(_ruleStore);
+        _httpSimApp = CreateHttpSimApp(args, appConfig, _httpSimRuleResolver, _ruleStore);
 
-        _httpSimApp = BuildHttpSimApplication(args, isControlEndpoint: false, useHttpLogging: false, appConfig.RequestBodyLogLimit, appConfig.ResponseBodyLogLimit);
+        // Start control endpoint only when the url is present
+        if (!string.IsNullOrEmpty(appConfig.ControlUrl))
+        {
+            _controlApp = CreateControlUrl(args, appConfig, _ruleStore);
+        }
+    }
+
+    private static WebApplication CreateControlUrl(string[] args, AppConfig appConfig, HttpSimRuleStore ruleStore)
+    {
+        var controlApp = BuildHttpSimApplication(args, isControlEndpoint: true, useHttpLogging: appConfig.LogControlRequestAndResponse, appConfig.RequestBodyLogLimit, appConfig.ResponseBodyLogLimit);
+        controlApp.MapControlEndpoints(ruleStore, appConfig.ResponseFilesFolder!, controlApp.Logger);
+
+        controlApp.Urls.Add(appConfig.ControlUrl!);
+        return controlApp;
+    }
+
+    private static WebApplication CreateHttpSimApp(string[] args, AppConfig appConfig, IHttpSimRuleResolver httpSimRuleResolver, HttpSimRuleStore ruleStore)
+    {
+        var httpSimApp = BuildHttpSimApplication(args, isControlEndpoint: false, useHttpLogging: false, appConfig.RequestBodyLogLimit, appConfig.ResponseBodyLogLimit);
         List<IRequestResponseLoggerPresentation> requestResponseLoggerPresentations =
         [
             new ConsoleRequestResponseLoggerPresentation()
         ];
 
-        var _requestResponseLogger = new RequestResponseLogger(_httpSimApp.Logger, appConfig, requestResponseLoggerPresentations);
+        var _requestResponseLogger = new RequestResponseLogger(httpSimApp.Logger, appConfig, requestResponseLoggerPresentations);
         if (appConfig.LogRequestAndResponse)
         {
-            _httpSimApp.UseRequestResponseLogger(_requestResponseLogger);
+            httpSimApp.UseRequestResponseLogger(_requestResponseLogger);
         }
 
-        var defaultResponse = BuildDefaultResponse(appConfig, _httpSimApp.Logger);
-        _httpSimApp.UseHttpSimRuleResolver(_httpSimRuleResolver, _httpSimApp.Logger, appConfig.ResponseFilesFolder!, defaultResponse);
+        var defaultResponse = BuildDefaultResponse(appConfig, httpSimApp.Logger);
+        httpSimApp.UseHttpSimRuleResolver(httpSimRuleResolver, httpSimApp.Logger, appConfig.ResponseFilesFolder!, defaultResponse);
 
-        var ruleLoaded = TryLoadRulesConfig(appConfig, _httpSimApp.Logger, out RulesConfig? rulesConfig);
+        var ruleLoaded = TryLoadRulesConfig(appConfig, httpSimApp.Logger, out RulesConfig? rulesConfig);
         if (ruleLoaded)
         {
-            _httpSimApp.UseRulesConfig(rulesConfig!.Rules, appConfig.ResponseFilesFolder!, _ruleStore);
+            httpSimApp.UseRulesConfig(rulesConfig!.Rules, appConfig.ResponseFilesFolder!, ruleStore);
         }
 
-        _httpSimApp.Urls.Add(appConfig.Url!);
-
-        // Start control endpoint only when the url is present
-        if (!string.IsNullOrEmpty(appConfig.ControlUrl))
-        {
-            _controlApp = BuildHttpSimApplication(args, isControlEndpoint: true, useHttpLogging: appConfig.LogControlRequestAndResponse, appConfig.RequestBodyLogLimit, appConfig.ResponseBodyLogLimit);
-            _controlApp.MapControlEndpoints(_ruleStore, appConfig.ResponseFilesFolder!, _controlApp.Logger);
-            _controlApp.Urls.Add(appConfig.ControlUrl!);
-        }
+        httpSimApp.Urls.Add(appConfig.Url!);
+        return httpSimApp;
     }
-
 
     private static HttpSimResponse BuildDefaultResponse(AppConfig appConfig, ILogger logger)
     {
