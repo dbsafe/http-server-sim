@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace HttpServerSim.App.Config;
 
-public class AppConfig : IConsoleRequestResponseLoggerConfig
+public class AppConfig : IConsoleRequestResponseLoggerConfig, IFileRequestResponseLoggerPresentationConfig
 {
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {

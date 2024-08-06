@@ -7,7 +7,6 @@ using HttpServerSim.App.Rules;
 using HttpServerSim.Contracts;
 using HttpServerSim.Models;
 using Microsoft.AspNetCore.HttpLogging;
-using Microsoft.AspNetCore.Identity;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -47,17 +46,30 @@ public sealed class ApiHttpSimServer : IDisposable
         return controlApp;
     }
 
+    private static List<IRequestResponseLoggerPresentation> BuildRequestResponseLoggerPresentations(AppConfig appConfig, ILogger logger)
+    {
+        List<IRequestResponseLoggerPresentation> requestResponseLoggerPresentations = [];
+        if (appConfig.SaveRequests is not null || appConfig.SaveResponses is not null)
+        {
+            requestResponseLoggerPresentations.Add(new FileRequestResponseLoggerPresentation(appConfig, logger));
+        }
+
+        if (appConfig.LogRequestAndResponse)
+        {
+            requestResponseLoggerPresentations.Add(new ConsoleRequestResponseLoggerPresentation());
+        }
+
+        return requestResponseLoggerPresentations;
+    }
+
     private static WebApplication CreateHttpSimApp(string[] args, AppConfig appConfig, IHttpSimRuleResolver httpSimRuleResolver, HttpSimRuleStore ruleStore)
     {
         var httpSimApp = BuildHttpSimApplication(args, isControlEndpoint: false, useHttpLogging: false, appConfig.RequestBodyLogLimit, appConfig.ResponseBodyLogLimit);
-        List<IRequestResponseLoggerPresentation> requestResponseLoggerPresentations =
-        [
-            new ConsoleRequestResponseLoggerPresentation()
-        ];
 
-        var _requestResponseLogger = new RequestResponseLogger(httpSimApp.Logger, appConfig, requestResponseLoggerPresentations);
-        if (appConfig.LogRequestAndResponse)
+        var requestResponseLoggerPresentations = BuildRequestResponseLoggerPresentations(appConfig, httpSimApp.Logger);
+        if (requestResponseLoggerPresentations.Count > 0)
         {
+            var _requestResponseLogger = new RequestResponseLogger(httpSimApp.Logger, appConfig, requestResponseLoggerPresentations);
             httpSimApp.UseRequestResponseLogger(_requestResponseLogger);
         }
 
