@@ -88,6 +88,29 @@ public class AppConfigLoader
         throw new ConfigurationErrorsException($"File '{path}' not found");
     }
 
+    private static string? NormalizeDirectory(string? directory, string currentDirectory)
+    {
+        if (directory is null)
+        {
+            return null;
+        }
+
+        var fullDirectory = Path.IsPathRooted(directory) ? directory : Path.GetFullPath(directory);
+        if (!Directory.Exists(fullDirectory))
+        {
+            try
+            {
+                Directory.CreateDirectory(fullDirectory);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating directory '{fullDirectory}'.{Environment.NewLine}{ex}");
+            }
+        }
+
+        return fullDirectory;
+    }
+
     private static void Validate(AppConfig appConfig)
     {
         appConfig.Rules = NormalizeRulesPath(appConfig.Rules, appConfig.CurrentDirectory);
@@ -98,6 +121,9 @@ public class AppConfigLoader
 
         // Use current directory for now. In the future it could be passed as an option and fall back to the current directory
         appConfig.ResponseFilesFolder = appConfig.CurrentDirectory;
+
+        appConfig.SaveResponses = NormalizeDirectory(appConfig.SaveResponses, appConfig.CurrentDirectory);
+        appConfig.SaveRequests = NormalizeDirectory(appConfig.SaveRequests, appConfig.CurrentDirectory);
     }
 }
 
