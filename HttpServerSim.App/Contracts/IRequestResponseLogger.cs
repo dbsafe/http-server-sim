@@ -2,6 +2,7 @@
 
 public interface IRequestResponseLogger
 {
-    Task LogRequestAsync(HttpContext context);
-    Task LogResponseAsync(HttpContext context);
+    // id is needed to link requests/responses
+    Task LogRequestAsync(HttpContext context, string id);
+    Task LogResponseAsync(HttpContext context, string id);
 }

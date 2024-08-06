@@ -18,7 +18,8 @@ internal static class HttpSimRuleResolver
     {
         return async (context, next) =>
         {
-            await requestResponseLogger.LogRequestAsync(context);
+            var id = Guid.NewGuid().ToString();
+            await requestResponseLogger.LogRequestAsync(context, id);
 
             var originalResponseBody = context.Response.Body;
             try
@@ -29,7 +30,7 @@ internal static class HttpSimRuleResolver
                 await next(context);
 
                 ms.Position = 0;
-                await requestResponseLogger.LogResponseAsync(context);
+                await requestResponseLogger.LogResponseAsync(context, id);
                 ms.Position = 0;
                 await ms.CopyToAsync(originalResponseBody);
             }

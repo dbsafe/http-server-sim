@@ -16,26 +16,23 @@ public class RequestResponseLogger(
     IConsoleRequestResponseLoggerConfig config, 
     IEnumerable<IRequestResponseLoggerPresentation> presentations) : IRequestResponseLogger
 {
-    public async Task LogRequestAsync(HttpContext context)
+    public async Task LogRequestAsync(HttpContext context, string id)
     {
         try
         {
             var request = context.Request ?? throw new InvalidOperationException("Request cannot be null");
 
             var sb = new StringBuilder();
-            sb.AppendLine();
-            sb.AppendLine($"{ConsoleColors.Underline}Request:{ConsoleColors.NoUnderline}");
             sb.AppendLine($"{request.Protocol} - {request.Method} - {request.Scheme}://{request.Host}{request.Path}{request.QueryString}");
 
             AddHeaders(sb, request.Headers);
 
             await AddContentAsync(sb, request, config.RequestBodyLogLimit);
-            sb.AppendLine("End of Request");
 
             var message = sb.ToString();
             foreach (var presentation in presentations)
             {
-                presentation.LogRequest(message);
+                presentation.LogRequest(message, id);
             }
         }
         catch (Exception ex)
@@ -71,39 +68,40 @@ public class RequestResponseLogger(
 
         if (body == string.Empty)
         {
-            sb.AppendLine("[Not present]");
+            sb.Append("[Not present]");
             return;
         }
 
         var size = Math.Min(body.Length, logBodyLimit);
-        sb.AppendLine(body[..size]);
         var isTruncated = size < body.Length;
         if (isTruncated)
         {
-            sb.AppendLine($"[Body truncated. Read {logBodyLimit} characters]");
+            sb.AppendLine(body[..size]);
+            sb.Append($"[Body truncated. Read {logBodyLimit} characters]");
+        }
+        else
+        {
+            sb.Append(body[..size]);
         }
     }
 
-    public async Task LogResponseAsync(HttpContext context)
+    public async Task LogResponseAsync(HttpContext context, string id)
     {
         try
         {
             var response = context.Response ?? throw new InvalidOperationException("Response cannot be null");
 
             var sb = new StringBuilder();
-            sb.AppendLine();
-            sb.AppendLine($"{ConsoleColors.Underline}Response:{ConsoleColors.NoUnderline}");
             sb.AppendLine($"Status Code: {response.StatusCode}");
 
             AddHeaders(sb, response.Headers);
 
             await AddContentAsync(sb, response, config.ResponseBodyLogLimit);
-            sb.AppendLine("End of Response");
 
             var message = sb.ToString();
             foreach (var presentation in presentations)
             {
-                presentation.LogResponse(message);
+                presentation.LogResponse(message, id);
             }
         }
         catch (Exception ex)
@@ -118,7 +116,7 @@ public class RequestResponseLogger(
 
         if (response.Body.Length == 0)
         {
-            sb.AppendLine("[Not present]");
+            sb.Append("[Not present]");
             return;
         }
 
@@ -126,12 +124,16 @@ public class RequestResponseLogger(
         var body = await reader.ReadToEndAsync();
         response.Body.Position = 0;
 
-        var size = Math.Min(body.Length, logBodyLimit);
-        sb.AppendLine(body[..size]);
-        var isTruncated = size < body.Length;
+        var size = Math.Min(body.Length, logBodyLimit);        
+        var isTruncated = size < body.Length;        
         if (isTruncated)
         {
-            sb.AppendLine($"[Body truncated. Read {logBodyLimit} characters]");
+            sb.AppendLine(body[..size]);
+            sb.Append($"[Body truncated. Read {logBodyLimit} characters]");
+        }
+        else
+        {
+            sb.Append(body[..size]);
         }
     }
 }

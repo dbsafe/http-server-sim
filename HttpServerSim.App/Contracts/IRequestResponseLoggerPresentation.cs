@@ -4,6 +4,6 @@ namespace HttpServerSim.App.Contracts;
 
 public interface IRequestResponseLoggerPresentation
 {
-    void LogRequest(string request);
-    void LogResponse(string response);
+    void LogRequest(string request, string id);
+    void LogResponse(string response, string id);
 }
