@@ -29,7 +29,7 @@ public static class AppInitializer
         var projectDirectory = Path.GetFullPath(relativePath, testDirectory);
 
         // `dotnet run` (without args) uses the args used in launchSettings.json
-        _testHost = new HttpServerSimHost(SimulatorUrl, projectDirectory, "dotnet", $"run --Rules rules.json --DefaultContentValue \"moved\" --DefaultContentType text/plain --DefaultStatusCode 301");
+        _testHost = new HttpServerSimHost(SimulatorUrl, projectDirectory, "dotnet", $"run --Rules rules.json --DefaultContentValue moved --DefaultContentType text/plain --DefaultStatusCode 301");
         _testHost.Start();
     }
 

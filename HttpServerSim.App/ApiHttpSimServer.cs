@@ -70,7 +70,10 @@ public sealed class ApiHttpSimServer : IDisposable
             }
         };
 
-        return RulesConfigHelper.BuildResponseFromRule(logger, configRule, string.Empty) ?? throw new InvalidOperationException($"{nameof(HttpSimResponse)} should not be null here.");
+        var defaultResponse = RulesConfigHelper.BuildResponseFromRule(logger, configRule, string.Empty) ?? throw new InvalidOperationException($"{nameof(HttpSimResponse)} should not be null here.");
+
+        logger.LogDebug($"Default Response{Environment.NewLine}{JsonSerializer.Serialize(defaultResponse)}");
+        return defaultResponse;
     }
 
     private static WebApplication BuildHttpSimApplication(string[] args, bool isControlEndpoint, bool useHttpLogging, int requestBodyLogLimit, int responseBodyLogLimit)
