@@ -8,6 +8,7 @@ namespace HttpServerSim.Models;
 /// <param name="name"></param>
 public class HttpSimRule(string name) : IHttpSimRule
 {
+    private const int MAX_STORED_REQUESTS = 10;
     public static readonly Func<HttpSimRequest, bool> UnspecifiedRuleEvaluationFunc = _ => false;
 
     private readonly object _requestLocker = new();
@@ -44,6 +45,10 @@ public class HttpSimRule(string name) : IHttpSimRule
         lock (_requestLocker)
         {
             _requests.Add(request);
+            while (_requests.Count > MAX_STORED_REQUESTS)
+            {
+                _requests.RemoveAt(0);
+            }
         }
     }
 }
