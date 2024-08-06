@@ -18,12 +18,17 @@ public class AppConfig : IConsoleRequestResponseLoggerConfig
     public string? ControlUrl { get; set; }
     public bool LogControlRequestAndResponse { get; set; }
     public bool LogRequestAndResponse { get; set; } = true;
+    
+    [JsonIgnore]
     public string CurrentDirectory { get; } = Environment.CurrentDirectory;
+    
     public int RequestBodyLogLimit { get; set; } = 4096;
     public int ResponseBodyLogLimit { get; set; } = 4096;
     public int DefaultStatusCode { get; set; } = 200;
     public string? DefaultContentType { get; set; }
     public string? DefaultContentValue { get; set; }
+    public string? SaveRequests { get; set; }
+    public string? SaveResponses { get; set; }
 
     [JsonIgnore]
     public string? ResponseFilesFolder { get; set; }
