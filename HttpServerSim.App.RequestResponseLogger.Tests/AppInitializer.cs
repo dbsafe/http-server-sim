@@ -14,6 +14,7 @@ public static class AppInitializer
 
     public static readonly HttpClient HttpClient = HttpServerSimHost.HttpClient;
     public static string SimulatorUrl { get; } = "http://localhost:5000";
+    public static string? HistoryFolder { get; private set; }
 
 #pragma warning disable IDE0052 // Remove unread private members
     private static TestContext? _testContext;
@@ -27,9 +28,10 @@ public static class AppInitializer
         var testDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException("Executable not found");
         var relativePath = "../../../../HttpServerSim.App";
         var projectDirectory = Path.GetFullPath(relativePath, testDirectory);
+        HistoryFolder = Path.Combine(projectDirectory, "http-server-sim-history");
 
         // `dotnet run` (without args) uses the args used in launchSettings.json
-        _testHost = new HttpServerSimHost(SimulatorUrl, projectDirectory, "dotnet", $"run --Rules rules.json --RequestBodyLogLimit 51 --ResponseBodyLogLimit 52");
+        _testHost = new HttpServerSimHost(SimulatorUrl, projectDirectory, "dotnet", $"run --Rules rules.json --RequestBodyLogLimit 51 --ResponseBodyLogLimit 52 --SaveRequests http-server-sim-history --SaveResponses http-server-sim-history");
         _testHost.Start();
     }
 

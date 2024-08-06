@@ -396,3 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Local saved test logs
+/HttpServerSim.App/http-server-sim-history/*

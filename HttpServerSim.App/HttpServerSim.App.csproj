@@ -60,6 +60,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="http-server-sim-history\" />
 	  <Folder Include="nupkg\" />
 	</ItemGroup>
 

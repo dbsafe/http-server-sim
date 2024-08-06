@@ -6,7 +6,7 @@ using System.Text;
 namespace HttpServerSim.App.RequestResponseLogger.Tests;
 
 [TestClass]
-public class RequestResponseLoggerTest
+public class ConsoleRequestResponseLoggerPresentationTest
 {
     private readonly string _simulatorUrl = AppInitializer.SimulatorUrl;
     private static readonly HttpClient _httpClient = AppInitializer.HttpClient;
