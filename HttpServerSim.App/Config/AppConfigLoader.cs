@@ -30,6 +30,10 @@ public class AppConfigLoader
         sb.AppendLine($"{PadRight("--ResponseBodyLogLimit <limit>")}Maximum response body size to log (in bytes). Default: 4096.");
 
         sb.AppendLine($"{PadRight("--Rules <file-name> | <path>")}Rules file. It can be a file name of a file that exists in the current directory or a full path to a file.");
+
+        sb.AppendLine($"{PadRight("--SaveRequests <directory>")}The directory where request messages are saved.");
+        sb.AppendLine($"{PadRight("--SaveResponses <directory>")}The directory where response messages are saved.");
+
         sb.AppendLine($"{PadRight("--Url <url>")}URL for simulating endpoints. Default: http://localhost:5000.");
 
         sb.AppendLine($"{PadRight("")}--Url and --ControlUrl cannot share the same value.");
