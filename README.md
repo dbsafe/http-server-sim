@@ -118,6 +118,17 @@ curl --location 'http://localhost:5000/customers' --header 'Content-Type: applic
 ```
 `http-server-sim` returns a response with `Status Code` 200. 
 
+### Saving request and response messages to files
+
+```bash
+# Save request and response to the folder messages-history under the current directory
+http-server-sim --SaveRequests messages-history --SaveResponses messages-history
+```
+
+- The directory can be a full path, e.g., `C:\temp\http-server-sim-messages`, or a relative directory under the current directory, e.g., `messages-history`.
+- Messages are saved using a `GUID` as the name, with the `.req` extension for request messages and the `.res` extension for response messages.
+- Keep in mind that files are not deleted automatically. If you have a long-running process creating files, the hard drive may eventually run out of space.
+
 ### http-server-sim CLI options
 
 | Option                           | Description                                                                                       |
@@ -132,6 +143,8 @@ curl --location 'http://localhost:5000/customers' --header 'Content-Type: applic
 | --RequestBodyLogLimit `<limit>`  | Maximum request body size to log (in bytes). Default: 4096.                                       |
 | --ResponseBodyLogLimit `<limit>` | Maximum response body size to log (in bytes). Default: 4096.                                      |
 | --Rules `<file-name> \| <path>`  | Rules file. It can be a file name of a file that exists in the current directory or a full path to a file. |
+| --SaveRequests `<directory>`     | The directory where request messages are saved.                                                   |
+| --SaveResponses `<directory>`    | The directory where response messages are saved.                                                  |
 | --Url `<url>`                    | URL for simulating endpoints. Default: `http://localhost:5000`.                                   |
 |                                  | `--Url` and `--ControlUrl` cannot share the same value.                                           |
 ||
