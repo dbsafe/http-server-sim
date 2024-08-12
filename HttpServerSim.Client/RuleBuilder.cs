@@ -1,8 +1,8 @@
 ﻿// Ignore Spelling: Json
 
 using HttpServerSim.Models;
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text.Json;
 
 namespace HttpServerSim.Client;
@@ -60,6 +60,7 @@ public static class RuleBuilderExtensionMethods
         return WithResponse(ruleBuilder, response);
     }
 
+    [Obsolete("RuleBuilder is deprecated, please use ReturnResponseFromFile instead.")]
     public static RuleBuilder ReturnTextResponseFromFile(this RuleBuilder ruleBuilder, string path, string contentType = "application/json", KeyValuePair<string, string[]>[]? headers = null, int statusCode = 200)
     {
         var response = new HttpSimResponse
@@ -72,6 +73,13 @@ public static class RuleBuilderExtensionMethods
         };
 
         return WithResponse(ruleBuilder, response);
+    }
+
+    public static RuleBuilder ReturnResponseFromFile(this RuleBuilder ruleBuilder, string path, string contentType = "application/json", KeyValuePair<string, string[]>[]? headers = null, int statusCode = 200)
+    {
+#pragma warning disable CS0618 // Type or member is obsolete but we still want to test the logic. Once ReturnTextResponseFromFile is removed the logic is moved to ReturnResponseFromFile
+        return ruleBuilder.ReturnTextResponseFromFile(path, contentType, headers, statusCode);
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     public static RuleBuilder ReturnWithStatusCode(this RuleBuilder ruleBuilder, int statusCode, KeyValuePair<string, string[]>[]? headers = null)
