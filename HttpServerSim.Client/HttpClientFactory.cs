@@ -40,7 +40,7 @@ public class LoggingHandler(string name, HttpMessageHandler innerHandler) : Dele
         return response;
     }
 
-    private async Task LogContentAsync(HttpContent? content, StringBuilder sb)
+    private static async Task LogContentAsync(HttpContent? content, StringBuilder sb)
     {
         if (content != null)
         {

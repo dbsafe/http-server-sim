@@ -129,7 +129,7 @@ public class HttpSimClientTest
 
         var rule = RuleBuilder.CreateRule("get-employees")
             .WithCondition(field: Field.Path, op: Operator.Contains, value: "employee-from-file")
-            .ReturnTextResponseFromFile(filename)
+            .ReturnResponseFromFile(filename)
             .Rule;
         _httpSimClient.AddRule(rule);
 
@@ -240,10 +240,7 @@ public class HttpSimClientTest
 
         await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", new { id = 1, name = "name-1" });
 
-        var expected = @"{
-    ""id"": 1,
-    ""name"": ""name-1""
-}";
+        var expected = "{\"id\": 1, \"name\": \"name-1\"}";
         
         _httpSimClient.VerifyLastRequestBodyAsJson(postRule.Name, expected);
     }

@@ -1,12 +1,12 @@
 ﻿// Ignore Spelling: App
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
 using System.Text;
+using System.Threading;
 
-namespace HttpServerSim.App.Tests.Shared;
+namespace HttpServerSim.Client;
 
 public class HttpServerSimHost : IDisposable
 {
@@ -15,16 +15,20 @@ public class HttpServerSimHost : IDisposable
     private readonly string _simulatorUrl;
     private bool _disposed = false;
 
-    public static readonly HttpClient HttpClient = new();        
-    public ConcurrentQueue<string> LogsQueue { get; } = new();
+    public event EventHandler<ConsoleAppRunnerEventArgs>? LogReceived;
 
-    public HttpServerSimHost(string simulatorUrl, string projectDirectory, string filenameOrCommand, string args)
+    public static readonly HttpClient HttpClient = new();        
+    private readonly ConcurrentQueue<string> _logsQueue = new();
+
+    public HttpServerSimHost(string simulatorUrl, string workingDirectory, string filenameOrCommand, string args)
     {
         _simulatorUrl = simulatorUrl;
-        _consoleAppRunner = new ConsoleAppRunner(projectDirectory, filenameOrCommand, args);
+        _consoleAppRunner = new ConsoleAppRunner(workingDirectory, filenameOrCommand, args);
         _consoleAppRunner.OutputDataReceived += ConsoleAppRunner_OutputDataReceived;
         _consoleAppRunner.ErrorDataReceived += ConsoleAppRunner_OutputDataReceived;
     }
+
+    protected virtual void OnLogReceived(ConsoleAppRunnerEventArgs e) => LogReceived?.Invoke(this, e);
 
     protected virtual void Dispose(bool disposing)
     {
@@ -60,31 +64,42 @@ public class HttpServerSimHost : IDisposable
         }
     }
 
-    private void ConsoleAppRunner_OutputDataReceived(object sender, DataReceivedEventArgs e)
+    private void ConsoleAppRunner_OutputDataReceived(object sender, ConsoleAppRunnerEventArgs e)
     {
         if (e.Data is not null)
         {
-            LogsQueue.Enqueue(e.Data);
+            _logsQueue.Enqueue(e.Data);
         }
     }
 
     public void Start()
     {
-        Console.WriteLine($"{nameof(HttpServerSimHost)} - Starting ...");
-        Assert.IsFalse(SendSimpleRequest(), "There is a process already listening in the same port");
+        _logsQueue.Enqueue($"{nameof(HttpServerSimHost)} - Starting ...");
+
+        if (SendSimpleRequest())
+        {
+            throw new InvalidOperationException("There is a process already listening in the same port");
+        }
+        
         _consoleAppRunner.Start();
-        Assert.IsTrue(WaitForServiceUsingARequest(), "Service was not ready");
+        if (!WaitForServiceUsingARequest())
+        {
+            throw new InvalidOperationException("Service was not ready");
+        }
     }
 
     public void Stop()
     {
-        Console.WriteLine($"{nameof(HttpServerSimHost)} - Stoping ...");
+        _logsQueue.Enqueue($"{nameof(HttpServerSimHost)} - Stopping ...");
+        FlushLogs();
+        _consoleAppRunner.OutputDataReceived -= ConsoleAppRunner_OutputDataReceived;
+        _consoleAppRunner.ErrorDataReceived -= ConsoleAppRunner_OutputDataReceived;
         _consoleAppRunner.Stop();
     }
 
     private bool WaitForServiceUsingARequest()
     {
-        static void OutputDataReceived(object sender, DataReceivedEventArgs e)
+        static void OutputDataReceived(object sender, ConsoleAppRunnerEventArgs e)
         {
             // This is used for debugging only because the same logs are logged from the test.
             // Requires adding TestContext testContext to the constructor
@@ -115,21 +130,32 @@ public class HttpServerSimHost : IDisposable
         }
     }
 
-    private bool WaitForResponse()
+    private bool WaitForResponse() => TryFindSection("Response:", "End of Response", out _);
+
+    private string FlushLogs()
     {
-        var sb = new StringBuilder();
-        return TryFindSection("Response:", "End of Response", sb, out _);
+        var logs = new StringBuilder();
+        while (_logsQueue.TryDequeue(out var log))
+        {
+            logs.Append(log);
+            OnLogReceived(new ConsoleAppRunnerEventArgs(log));
+        }
+
+        return logs.ToString();
     }
 
-    public bool TryFindSection(string startToken, string endToken, StringBuilder logs, [NotNullWhen(true)] out string? section)
+    public bool TryFindSection(string startToken, string endToken, out string? section)
     {
+        var logs = new StringBuilder();
         var expiration = DateTimeOffset.UtcNow + _timeout;
         while (expiration > DateTimeOffset.UtcNow)
         {
-            while (LogsQueue.TryDequeue(out var log))
+            Thread.Sleep(10);
+
+            if (_logsQueue.TryDequeue(out var log))
             {
-                Console.WriteLine(log);
                 logs.AppendLine(log);
+                OnLogReceived(new ConsoleAppRunnerEventArgs(log));
             }
 
             var currentLogs = logs.ToString();
@@ -138,7 +164,6 @@ public class HttpServerSimHost : IDisposable
 
             if (startIndex == -1 || endIndex == -1)
             {
-                Thread.Sleep(100);
                 continue;
             }
 

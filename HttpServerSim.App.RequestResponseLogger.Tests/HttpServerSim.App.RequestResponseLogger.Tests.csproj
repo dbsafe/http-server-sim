@@ -20,7 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HttpServerSim.App.Tests.Shared\HttpServerSim.App.Tests.Shared.csproj" />
+    <ProjectReference Include="..\HttpServerSim.App\HttpServerSim.App.csproj">
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\HttpServerSim.Client\HttpServerSim.Client.csproj" />
+    <ProjectReference Include="..\HttpServerSim.Tests.Shared\HttpServerSim.Tests.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

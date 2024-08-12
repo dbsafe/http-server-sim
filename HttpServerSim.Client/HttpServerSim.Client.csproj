@@ -6,7 +6,34 @@
 	<Nullable>enable</Nullable>
 	<PackageOutputPath>./nupkg</PackageOutputPath>
 	<IsPackable>true</IsPackable>
+	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	<PackageId>http-server-sim-client</PackageId>
+	<Title>http-server-sim-client</Title>
+	<Authors>Ernesto Valcarcel</Authors>
+	<Product>http-server-sim</Product>
+	<Description>.NET client to connect to http-server-sim.</Description>
+	<Copyright>Copyright (c) 2024 http-server-sim</Copyright>
+	<PackageProjectUrl>https://github.com/dbsafe/http-server-sim</PackageProjectUrl>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<RepositoryUrl>https://github.com/dbsafe/http-server-sim</RepositoryUrl>
+	<PackageTags>Web API;Testing;Integration;Simulator</PackageTags>
+	<PackageLicenseFile>LICENSE</PackageLicenseFile>
+	<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+	<IncludeSymbols>True</IncludeSymbols>
+	<EnableNETAnalyzers>True</EnableNETAnalyzers>
+	<AnalysisLevel>latest</AnalysisLevel>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="6.12.0" />

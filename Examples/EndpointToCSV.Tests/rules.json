@@ -1,0 +1,24 @@
+{
+  "rules": [
+    {
+      "name": "get-customers",
+      "conditions": [
+        {
+          "field": "Path",
+          "operator": "Contains",
+          "value": "/customers"
+        },
+        {
+          "field": "Method",
+          "operator": "Equals",
+          "value": "GET"
+        }
+      ],
+      "response": {
+        "contentType": "application/json",
+        "contentValue": "customers.json",
+        "contentValueType": "File"
+      }
+    }
+  ]
+}

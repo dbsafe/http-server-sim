@@ -1,22 +1,31 @@
+#nullable disable
+
 // Ignore Spelling: json
 
 using System.Net.Http.Json;
-using System.Text;
 
 namespace HttpServerSim.App.RequestResponseLogger.Tests;
 
 [TestClass]
 public class ConsoleRequestResponseLoggerPresentationTest
 {
-    private readonly string _simulatorUrl = AppInitializer.SimulatorUrl;
-    private static readonly HttpClient _httpClient = AppInitializer.HttpClient;
-    private string? _actualRequestLog;
-    private string? _actualResponseLog;
+    private readonly string _simulatorUrl = AppInitializer.TestHost.SimulatorUrl;
+    private static readonly HttpClient _httpClient = AppInitializer.TestHost.HttpClient;
+    private string _actualRequestLog;
+    private string _actualResponseLog;
+
+    public TestContext TestContext { get; set; }
 
     [TestInitialize]
     public void TestInitialize()
     {
-        AppInitializer.FlushLogs();
+        AppInitializer.TestHost.FlushLogs();
+    }
+
+    [TestCleanup]
+    public void TestCleanup()
+    {
+        AppInitializer.TestHost.FlushLogs();
     }
 
     [TestMethod]
@@ -161,9 +170,7 @@ End of Response";
 
     private void LoadRequestLogAndResponseLog()
     {
-        var sb = new StringBuilder();
-
-        Assert.IsTrue(AppInitializer.TryFindSection("Request:", "End of Request", sb, out _actualRequestLog), "Request log not found");
-        Assert.IsTrue(AppInitializer.TryFindSection("Response:", "End of Response", sb, out _actualResponseLog), "Response log not found");
+        Assert.IsTrue(AppInitializer.TestHost.TryFindSection("Request:", "End of Request", out _actualRequestLog), "Request log not found");
+        Assert.IsTrue(AppInitializer.TestHost.TryFindSection("Response:", "End of Response", out _actualResponseLog), "Response log not found");
     }
 }

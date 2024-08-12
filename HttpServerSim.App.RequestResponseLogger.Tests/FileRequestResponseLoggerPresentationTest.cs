@@ -1,23 +1,36 @@
 ﻿// Ignore Spelling: json
 
+using System.Reflection;
+
 namespace HttpServerSim.App.RequestResponseLogger.Tests;
 
 [TestClass]
 public class FileRequestResponseLoggerPresentationTest
 {
+    private readonly string _simulatorUrl = AppInitializer.TestHost.SimulatorUrl;
+    private static readonly HttpClient _httpClient = AppInitializer.TestHost.HttpClient;
     private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(10);
-    private static readonly HttpClient _httpClient = AppInitializer.HttpClient;
-    private readonly string _simulatorUrl = AppInitializer.SimulatorUrl;
+
+    private static readonly string _testDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException("Executable not found");
+    private static readonly string _historyFolder = Path.Combine(_testDirectory, "http-server-sim-history");
 
     [TestInitialize]
     public void TestInitialize()
     {
+        AppInitializer.TestHost.FlushLogs();
+
         foreach (var file in GeHistoryFiles())
         {
             File.Delete(file);
         }
 
-        Assert.IsFalse(Directory.EnumerateFiles(AppInitializer.HistoryFolder!).Any(), $"{nameof(AppInitializer.HistoryFolder)} should be empty.");
+        Assert.IsFalse(Directory.EnumerateFiles(_historyFolder!).Any(), $"{nameof(_historyFolder)} should be empty.");
+    }
+
+    [TestCleanup]
+    public void TestCleanup()
+    {
+        AppInitializer.TestHost.FlushLogs();
     }
 
     [TestMethod]
@@ -55,7 +68,7 @@ Body:
     private static bool WaitForFilesInHistoryDirectory(int count)
     {
         var expiration = DateTimeOffset.UtcNow + _timeout;
-        while(expiration > DateTimeOffset.UtcNow)
+        while (expiration > DateTimeOffset.UtcNow)
         {
             if (GeHistoryFiles().Count() == count)
             {
@@ -70,6 +83,6 @@ Body:
 
     private static IEnumerable<string> GeHistoryFiles()
     {
-        return Directory.EnumerateFiles(AppInitializer.HistoryFolder!, "*.*").Where(f => f.EndsWith(".res") || f.EndsWith(".req"));
+        return Directory.EnumerateFiles(_historyFolder!, "*.*").Where(f => f.EndsWith(".res") || f.EndsWith(".req"));
     }
 }
