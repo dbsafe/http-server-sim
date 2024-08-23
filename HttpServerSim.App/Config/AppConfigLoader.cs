@@ -2,12 +2,24 @@
 
 using System.Configuration;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace HttpServerSim.App.Config;
 
 public class AppConfigLoader
 {
+    public static Dictionary<string, string> ValidArgs { get; } = GetValidArgs();
+
+    private static Dictionary<string, string> GetValidArgs()
+    {
+        return typeof(AppConfig).GetProperties()
+            .Where(p => p.GetCustomAttribute(typeof(JsonIgnoreAttribute)) is null)
+            .Select(p => p.Name)
+            .ToDictionary(n => n) ?? [];
+    }
+
     public static void PrintHelp()
     {
         static string PadRight(string source) => source.PadRight(35);
@@ -22,7 +34,7 @@ public class AppConfigLoader
         sb.AppendLine($"{PadRight("--DefaultStatusCode <value>")}The HTTP status code used in a response message when no rule matching the request is found. Default: 200.");
 
         sb.AppendLine($"{PadRight("--Help")}Prints this help.");
-        
+
         sb.AppendLine($"{PadRight("--LogControlRequestAndResponse")}Whether control requests and responses are logged. Default: false.");
         sb.AppendLine($"{PadRight("--LogRequestAndResponse")}Whether requests and responses are logged. Default: true.");
 
@@ -43,6 +55,12 @@ public class AppConfigLoader
 
     public static bool TryLoadAppConfig(string[] args, bool isDebugMode, [NotNullWhen(true)] out AppConfig? appConfig)
     {
+        if (!ValidateArgs(args))
+        {
+            appConfig = null;
+            return false;
+        }
+
         var builder = WebApplication.CreateBuilder(args);
         builder.Logging.ClearProviders();
 
@@ -68,6 +86,37 @@ public class AppConfigLoader
         AppConfig appConfig = config.Get<AppConfig>() ?? throw new ConfigurationErrorsException("Missing arguments and configuration");
         Validate(appConfig);
         return appConfig!;
+    }
+
+    private static bool ValidateArgs(string[] args)
+    {
+        var parsedArgs = CommandLineHelper.ParseArgs(args);
+
+        var validArgs = GetValidArgs();
+        var invalidArgs = parsedArgs.Select(a => a.Key).Where(a => !a.StartsWith("Logging:") && !validArgs.TryGetValue(a, out _));
+        if (!invalidArgs.Any())
+        {
+            return true;
+        }
+
+        var optionWord = invalidArgs.Count() == 1 ? "option" : "options";
+        var sb = new StringBuilder();
+        if (invalidArgs.Count() == 1)
+        {
+            sb.AppendLine("Invalid option:");
+        }
+        else
+        {
+            sb.AppendLine("Invalid options:");
+        }
+
+        foreach (var invalidArg in invalidArgs)
+        {
+            sb.AppendLine($"\t{invalidArg}");
+        }
+
+        Console.WriteLine(sb);
+        return false;
     }
 
     private static string? NormalizeRulesPath(string? path, string currentDirectory)

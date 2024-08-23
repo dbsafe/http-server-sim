@@ -399,3 +399,6 @@ FodyWeavers.xsd
 
 # Local saved test logs
 /HttpServerSim.App/http-server-sim-history/*
+
+# Mac files
+**/*.DS_Store

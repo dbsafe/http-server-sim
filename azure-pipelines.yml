@@ -39,6 +39,13 @@ steps:
     command: 'test'
     projects: './HttpServerSim.App.DefaultResponse.Tests/HttpServerSim.App.DefaultResponse.Tests.csproj'
 
+
+- task: DotNetCoreCLI@2
+  displayName: Run Unit Tests - Invalid Args
+  inputs:
+    command: 'test'
+    projects: './HttpServerSim.InvalidArgs.Tests/HttpServerSim.InvalidArgs.Tests.csproj'
+
 - script: docker build -t http-server-sim-build -f Dockerfile .
   displayName: Build Docker image with HttpServerSim.App
 

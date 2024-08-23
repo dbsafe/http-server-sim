@@ -92,11 +92,26 @@ public class HttpServerSimHost : IDisposable
     {
         _logsQueue.Enqueue($"{nameof(HttpServerSimHost)} - Stopping ...");
         FlushLogs();
-        _consoleAppRunner.OutputDataReceived -= ConsoleAppRunner_OutputDataReceived;
-        _consoleAppRunner.ErrorDataReceived -= ConsoleAppRunner_OutputDataReceived;
         _consoleAppRunner.Stop();
     }
 
+    public bool RunAndWaitForExit(TimeSpan timeout) 
+    {
+        _logsQueue.Enqueue($"{nameof(HttpServerSimHost)} - Starting process and waiting ...");
+        var stopped =_consoleAppRunner.RunAndWaitForExit(timeout);
+        if (stopped)
+        {
+            _logsQueue.Enqueue($"{nameof(HttpServerSimHost)} - Stopped");
+        }
+        else
+        {
+            _logsQueue.Enqueue($"{nameof(HttpServerSimHost)} - Failed to stop");
+        }
+
+        FlushLogs();
+        return stopped;
+    }
+    
     private bool WaitForServiceUsingARequest()
     {
         static void OutputDataReceived(object sender, ConsoleAppRunnerEventArgs e)

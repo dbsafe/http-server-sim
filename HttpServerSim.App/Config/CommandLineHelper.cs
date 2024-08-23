@@ -14,7 +14,7 @@ public static class CommandLineHelper
         return list.FirstOrDefault(a => a.Key == name).Value;
     }
 
-    private static List<KeyValuePair<string, string>> ParseArgs(string[] args)
+    public static List<KeyValuePair<string, string>> ParseArgs(string[] args)
     {
         var list = new List<KeyValuePair<string, string>>();
 

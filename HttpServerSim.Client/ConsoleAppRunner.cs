@@ -90,10 +90,12 @@ public class ConsoleAppRunner : IDisposable
         _isProcessRunning = false;
     }
 
-    public bool RunWaitForExit(TimeSpan timeout)
+    public bool RunAndWaitForExit(TimeSpan timeout)
     {
         Start();
-        return _process.WaitForExit((int)timeout.TotalMilliseconds);
+        var stopped = _process.WaitForExit((int)timeout.TotalMilliseconds);
+        Stop();
+        return stopped;
     }
 
     private void OnOutputDataReceived(object sender, ConsoleAppRunnerEventArgs e) => OutputDataReceived?.Invoke(sender, e);
