@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Concurrent;
+using System.Data.Common;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
@@ -35,9 +36,10 @@ namespace HttpServerSim.Tests.Shared
         public void Stop()
         {
             FlushLogs();
-            _testHost?.Stop();
-            _testHost?.Dispose();
+            _testHost.Stop();
         }
+
+        public bool RunAndWaitForExit(TimeSpan timeout) => _testHost.RunAndWaitForExit(timeout);
 
         private void TestHost_LogReceived(object sender, ConsoleAppRunnerEventArgs e) => _logsQueue.Enqueue(e.Data);
 
@@ -65,7 +67,7 @@ namespace HttpServerSim.Tests.Shared
         public bool TryFindSection(string startToken, string endToken, out string section) =>
             _testHost!.TryFindSection(startToken, endToken, out section);
 
-        public void FlushLogs()
+        public string FlushLogs()
         {
             var sb = new StringBuilder();
             while (_logsQueue.TryDequeue(out var log))
@@ -73,10 +75,13 @@ namespace HttpServerSim.Tests.Shared
                 sb.AppendLine(log);
             }
 
-            if (sb.Length > 0)
+            var logs = sb.ToString();
+            if (!string.IsNullOrEmpty(logs))
             {
-                _testContext.WriteLine($"[HttpServerSim.App]{Environment.NewLine}{sb}");
+                _testContext.WriteLine($"[HttpServerSim.App]{Environment.NewLine}{logs}");
             }
+
+            return logs;
         }
     }
 }

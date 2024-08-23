@@ -1,0 +1,4 @@
+Version 1.2.0
+
+What's New?
+- Print an error message when passing an invalid option.
