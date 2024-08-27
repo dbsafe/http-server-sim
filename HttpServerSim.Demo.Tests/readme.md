@@ -9,7 +9,7 @@ Run `HttpServerSim.App` by using a launch profile with command line argument `--
 
 ### Testing against http-server-sim installed as a dotnet tool
 `http-server-sim` must be already installed.
-Run `http-server-sim`
+Run `http-server-sim` in `\HttpServerSim.App`
 ```bash
 http-server-sim --ControlUrl http://localhost:5001
 ```

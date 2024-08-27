@@ -92,7 +92,7 @@ public class IntegrationTest3
         using var consoleAppRunner = new ConsoleAppRunner(testDirectory, "dotnet", "EndpointToCSV.dll http://localhost:5000/customers customers.csv");
         consoleAppRunner.OutputDataReceived += ConsoleAppRunner_OutputDataReceived;
         consoleAppRunner.ErrorDataReceived += ConsoleAppRunner_OutputDataReceived;
-        var completed = consoleAppRunner.RunWaitForExit(TimeSpan.FromSeconds(10));
+        var completed = consoleAppRunner.RunAndWaitForExit(TimeSpan.FromSeconds(10));
         Assert.IsTrue(completed, "Process did not complete on time.");
 
         // At this point EndpointToCSV completed executing:
