@@ -1,6 +1,7 @@
 # http-server-sim
 
 [![Build Status](https://dev.azure.com/dbsafe/dbsafe/_apis/build/status%2Fhttp-server-sim%2Fhttp-server-sim-2024?branchName=main)](https://dev.azure.com/dbsafe/dbsafe/_build/latest?definitionId=13&branchName=main)
+[![NuGet version](https://badge.fury.io/nu/http-server-sim.svg)](https://badge.fury.io/nu/http-server-sim)
 
 HTTP Server Simulator is a .NET tool that runs a Web API simulating HTTP endpoints, supporting the development and testing of components that use HTTP.
 
