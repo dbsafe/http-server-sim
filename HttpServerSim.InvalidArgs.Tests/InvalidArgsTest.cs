@@ -24,7 +24,7 @@ public class InvalidArgsTest
         _host.RunAndWaitForExit(TimeSpan.FromSeconds(10));
         
         var actualLogs = _host.FlushLogs();
-        var expectedLogs = "Invalid options:\n\tCurrentDirectory\n\tMore\n\tOther";
+        var expectedLogs = $"Invalid options:{Environment.NewLine}\tCurrentDirectory{Environment.NewLine}\tMore{Environment.NewLine}\tOther";
  
         Assert.IsTrue(actualLogs.Contains(expectedLogs), "Expected logs not found.");
     }
