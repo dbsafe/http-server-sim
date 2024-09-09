@@ -1,9 +1,9 @@
 ﻿// Ignore Spelling: Api app Middleware
 
 using HttpServerSim.App.Contracts;
+using HttpServerSim.App.Models;
 using HttpServerSim.Client;
-using HttpServerSim.Contracts;
-using HttpServerSim.Models;
+using HttpServerSim.Client.Models;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 using System.IO.Compression;
@@ -44,7 +44,10 @@ internal static class HttpSimRuleResolver
     /// <summary>
     /// Creates middleware for finding a rule that matches a request.
     /// </summary>
-    public static Func<HttpContext, RequestDelegate, Task> CreateMiddlewareHandleRequest(IHttpSimRuleResolver httpSimRuleResolver, ILogger logger, string responseFilesFolder, HttpSimResponse defaultResponse)
+    public static Func<HttpContext, RequestDelegate, Task> CreateMiddlewareHandleRequest(IHttpSimRuleResolver httpSimRuleResolver, 
+        ILogger logger, 
+        string responseFilesFolder,
+        DefaultResponse defaultResponse)
     {
         ArgumentNullException.ThrowIfNull(defaultResponse);
 
@@ -63,7 +66,8 @@ internal static class HttpSimRuleResolver
             if (httpSimRule == null)
             {
                 logger.LogDebug("Rule matching request not found. Using the default response");
-                await SetHttpResponseAsync(context, defaultResponse, logger, responseFilesFolder);
+                await SetHttpResponseAsync(context, defaultResponse.Response, logger, responseFilesFolder);
+                await IntroduceDelayAsync(logger, defaultResponse.Delay);
                 return;
             }
 
@@ -72,11 +76,25 @@ internal static class HttpSimRuleResolver
             if (httpSimRule.Response == null)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
+                await IntroduceDelayAsync(logger, httpSimRule.Delay);
                 return;
             }
 
             await SetHttpResponseAsync(context, httpSimRule.Response, logger, responseFilesFolder);
         };
+    }
+
+    private static async Task IntroduceDelayAsync(ILogger logger, DelayRange? delay)
+    {
+        if (delay is null)
+        {
+            return;
+        }
+
+        var actualDelay = delay.Max.HasValue ? new Random().Next(delay.Min, delay.Max.Value) : delay.Min;
+        
+        logger.LogDebug($"Adding a delay of: {actualDelay} Milliseconds");
+        await Task.Delay(actualDelay);
     }
 
     private static async Task SetHttpResponseAsync(HttpContext context, HttpSimResponse httpSimResponse, ILogger logger, string responseFilesFolder)

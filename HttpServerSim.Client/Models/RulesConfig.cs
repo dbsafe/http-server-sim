@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace HttpServerSim.Models;
+namespace HttpServerSim.Client.Models;
 
 /// <summary>
 /// Defines a schema used when loading rules from a json file
@@ -20,6 +20,13 @@ public class ConfigRule
     public string? Description { get; set; }
     public List<ConfigCondition> Conditions { get; set; } = [];
     public HttpSimResponse? Response { get; set; }
+    public DelayRange? DelayRange { get; set; }
+}
+
+public class DelayRange
+{
+    public int Min { get; set; }
+    public int? Max { get; set; }
 }
 
 /// <summary>

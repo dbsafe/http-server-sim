@@ -1,7 +1,7 @@
-﻿using HttpServerSim.Models;
+﻿using HttpServerSim.Client.Models;
 using System.Text.Json.Serialization;
 
-namespace HttpServerSim.Contracts;
+namespace HttpServerSim.App.Contracts;
 
 /// <summary>
 /// Defines a rule in the server.
@@ -11,6 +11,7 @@ public interface IHttpSimRule
 {
     string Name { get; }
     HttpSimResponse? Response { get; set; }
+    DelayRange? Delay { get; }
 
     [JsonIgnore]
     Func<HttpSimRequest, bool> RuleEvaluationFunc { get; set; }

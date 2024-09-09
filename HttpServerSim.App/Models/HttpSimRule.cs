@@ -1,6 +1,7 @@
-﻿using HttpServerSim.Contracts;
+﻿using HttpServerSim.App.Contracts;
+using HttpServerSim.Client.Models;
 
-namespace HttpServerSim.Models;
+namespace HttpServerSim.App.Models;
 
 /// <summary>
 /// Rule in the server
@@ -18,6 +19,7 @@ public class HttpSimRule(string name) : IHttpSimRule
 
     public string Name { get; } = name;
     public HttpSimResponse? Response { get; set; }
+    public DelayRange? Delay { get; set; }
 
     public Func<HttpSimRequest, bool> RuleEvaluationFunc
     {
