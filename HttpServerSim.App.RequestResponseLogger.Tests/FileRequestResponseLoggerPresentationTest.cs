@@ -15,8 +15,9 @@ public class FileRequestResponseLoggerPresentationTest
     private static readonly string _historyFolder = Path.Combine(_testDirectory, "http-server-sim-history");
 
     [TestInitialize]
-    public void TestInitialize()
+    public void Initialize()
     {
+        AppInitializer.Lock();
         AppInitializer.TestHost.FlushLogs();
 
         foreach (var file in GeHistoryFiles())
@@ -28,9 +29,10 @@ public class FileRequestResponseLoggerPresentationTest
     }
 
     [TestCleanup]
-    public void TestCleanup()
+    public void Cleanup()
     {
         AppInitializer.TestHost.FlushLogs();
+        AppInitializer.Unlock();
     }
 
     [TestMethod]

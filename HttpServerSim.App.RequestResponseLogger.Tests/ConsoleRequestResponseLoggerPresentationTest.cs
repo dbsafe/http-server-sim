@@ -17,15 +17,17 @@ public class ConsoleRequestResponseLoggerPresentationTest
     public TestContext TestContext { get; set; }
 
     [TestInitialize]
-    public void TestInitialize()
+    public void Initialize()
     {
+        AppInitializer.Lock();
         AppInitializer.TestHost.FlushLogs();
     }
 
     [TestCleanup]
-    public void TestCleanup()
+    public void Cleanup()
     {
         AppInitializer.TestHost.FlushLogs();
+        AppInitializer.Unlock();
     }
 
     [TestMethod]
