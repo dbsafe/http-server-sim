@@ -10,6 +10,16 @@ namespace HttpServerSim.App.RequestResponseLogger.Tests;
 public static class AppInitializer
 {
     public static HttpServerSimHostTest TestHost { get; private set; }
+    
+    public static void Lock()
+    {
+        Monitor.Enter(TestHost);
+    }
+
+    public static void Unlock()
+    {
+        Monitor.Exit(TestHost);
+    }
 
     [AssemblyInitialize]
     public static void StartApp(TestContext testContext)
