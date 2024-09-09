@@ -1,10 +1,9 @@
 ﻿// Ignore Spelling: Api app
 
+using HttpServerSim.App.Contracts;
 using HttpServerSim.App.Rules;
 using HttpServerSim.Client;
 using HttpServerSim.Client.Models;
-using HttpServerSim.Contracts;
-using HttpServerSim.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics.CodeAnalysis;
 

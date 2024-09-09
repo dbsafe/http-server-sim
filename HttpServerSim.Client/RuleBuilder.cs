@@ -1,6 +1,6 @@
 ﻿// Ignore Spelling: Json
 
-using HttpServerSim.Models;
+using HttpServerSim.Client.Models;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;

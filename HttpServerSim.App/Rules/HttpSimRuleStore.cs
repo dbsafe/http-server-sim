@@ -1,4 +1,4 @@
-﻿using HttpServerSim.Contracts;
+﻿using HttpServerSim.App.Contracts;
 
 namespace HttpServerSim.App.Rules;
 

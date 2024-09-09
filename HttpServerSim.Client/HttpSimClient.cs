@@ -2,7 +2,6 @@
 
 using FluentAssertions;
 using HttpServerSim.Client.Models;
-using HttpServerSim.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +17,7 @@ namespace HttpServerSim.Client;
 
 public class HttpSimClient(string controlUrl)
 {
-    public static HttpClient _httpClient = HttpClientFactory.CreateHttpClient(nameof(HttpSimClient));
+    private static readonly HttpClient _httpClient = HttpClientFactory.CreateHttpClient(nameof(HttpSimClient));
     private readonly string _controlUrl = controlUrl;
     private static readonly JsonSerializerOptions _serializerOptions = new()
     {

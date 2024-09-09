@@ -1,7 +1,7 @@
 ﻿// Ignore Spelling: Api app
 
-using HttpServerSim.Contracts;
-using HttpServerSim.Models;
+using HttpServerSim.App.Contracts;
+using HttpServerSim.Client.Models;
 using System.Text;
 
 namespace HttpServerSim.App.Rules;

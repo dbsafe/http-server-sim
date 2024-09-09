@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace HttpServerSim.Models;
+namespace HttpServerSim.Client.Models;
 
 /// <summary>
 /// Defines a response HTTP message
