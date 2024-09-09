@@ -3,15 +3,15 @@
 using HttpServerSim.App.Config;
 using HttpServerSim.App.Contracts;
 using HttpServerSim.App.Middleware;
+using HttpServerSim.App.Models;
 using HttpServerSim.App.Rules;
-using HttpServerSim.Contracts;
-using HttpServerSim.Models;
+using HttpServerSim.Client.Models;
 using Microsoft.AspNetCore.HttpLogging;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace HttpServerSim;
+namespace HttpServerSim.App;
 
 public sealed class ApiHttpSimServer : IDisposable
 {
@@ -27,7 +27,7 @@ public sealed class ApiHttpSimServer : IDisposable
 
     public ApiHttpSimServer(string[] args, AppConfig appConfig)
     {
-        _httpSimRuleResolver = new App.Rules.HttpSimRuleResolver(_ruleStore);
+        _httpSimRuleResolver = new Rules.HttpSimRuleResolver(_ruleStore);
         _httpSimApp = CreateHttpSimApp(args, appConfig, _httpSimRuleResolver, _ruleStore);
 
         // Start control endpoint only when the url is present
@@ -86,7 +86,7 @@ public sealed class ApiHttpSimServer : IDisposable
         return httpSimApp;
     }
 
-    private static HttpSimResponse BuildDefaultResponse(AppConfig appConfig, ILogger logger)
+    private static DefaultResponse BuildDefaultResponse(AppConfig appConfig, ILogger logger)
     {
         var configRule = new ConfigRule
         {
@@ -100,9 +100,21 @@ public sealed class ApiHttpSimServer : IDisposable
             }
         };
 
-        var defaultResponse = RulesConfigHelper.BuildResponseFromRule(logger, configRule, string.Empty) ?? throw new InvalidOperationException($"{nameof(HttpSimResponse)} should not be null here.");
+        var response = RulesConfigHelper.BuildResponseFromRule(logger, configRule, string.Empty) ?? throw new InvalidOperationException($"{nameof(HttpSimResponse)} should not be null here.");
 
-        logger.LogDebug($"Default Response{Environment.NewLine}{JsonSerializer.Serialize(defaultResponse)}");
+        logger.LogDebug($"Default Response{Environment.NewLine}{JsonSerializer.Serialize(response)}");
+
+        var defaultResponse = new DefaultResponse { Response = response };
+        
+        if (appConfig.DefaultDelay.HasValue || appConfig.DefaultDelayMax.HasValue)
+        {
+            defaultResponse.Delay = new DelayRange
+            {
+                Min = appConfig.DefaultDelay ?? 0,
+                Max = appConfig.DefaultDelayMax
+            };
+        }
+
         return defaultResponse;
     }
 

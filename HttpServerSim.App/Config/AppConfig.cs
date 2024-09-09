@@ -24,9 +24,13 @@ public class AppConfig : IConsoleRequestResponseLoggerConfig, IFileRequestRespon
     
     public int RequestBodyLogLimit { get; set; } = 4096;
     public int ResponseBodyLogLimit { get; set; } = 4096;
+    
     public int DefaultStatusCode { get; set; } = 200;
     public string? DefaultContentType { get; set; }
     public string? DefaultContentValue { get; set; }
+    public int? DefaultDelay { get; set; }
+    public int? DefaultDelayMax { get; set; }
+
     public string? SaveRequests { get; set; }
     public string? SaveResponses { get; set; }
 
