@@ -4,7 +4,7 @@
 
 using FluentAssertions;
 using HttpServerSim.Client;
-using HttpServerSim.Models;
+using HttpServerSim.Client.Models;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;

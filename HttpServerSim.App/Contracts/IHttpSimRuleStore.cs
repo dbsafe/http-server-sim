@@ -1,4 +1,4 @@
-﻿namespace HttpServerSim.Contracts;
+﻿namespace HttpServerSim.App.Contracts;
 
 /// <summary>
 /// Defines the contract of a rule store in the server

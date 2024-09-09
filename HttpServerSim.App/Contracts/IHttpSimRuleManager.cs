@@ -1,6 +1,6 @@
-﻿using HttpServerSim.Models;
+﻿using HttpServerSim.Client.Models;
 
-namespace HttpServerSim.Contracts;
+namespace HttpServerSim.App.Contracts;
 
 /// <summary>
 /// Defines a contract that supports creating rules in the server.

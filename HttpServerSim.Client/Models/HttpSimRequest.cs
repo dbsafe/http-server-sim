@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-namespace HttpServerSim.Models;
+namespace HttpServerSim.Client.Models;
 
 /// <summary>
 /// Defines a HTTP request
