@@ -2,7 +2,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Concurrent;
-using System.Data.Common;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
@@ -31,7 +30,7 @@ namespace HttpServerSim.Tests.Shared
             _testHost.LogReceived += TestHost_LogReceived;
         }
 
-        public void Start() => _testHost.Start();
+        public void Start(bool waitForServiceUsingARequest = true) => _testHost.Start(waitForServiceUsingARequest);
 
         public void Stop()
         {
@@ -64,8 +63,10 @@ namespace HttpServerSim.Tests.Shared
             GC.SuppressFinalize(this);
         }
 
-        public bool TryFindSection(string startToken, string endToken, out string section) =>
-            _testHost!.TryFindSection(startToken, endToken, out section);
+        public bool TryFindLog(string token, TimeSpan? timeout = null) => _testHost!.TryFindLog(token, timeout);
+
+        public bool TryFindLogSection(string startToken, string endToken, out string section) =>
+            _testHost!.TryFindLogSection(startToken, endToken, out section);
 
         public string FlushLogs()
         {

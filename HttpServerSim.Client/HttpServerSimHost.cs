@@ -72,7 +72,7 @@ public class HttpServerSimHost : IDisposable
         }
     }
 
-    public void Start()
+    public void Start(bool waitForServiceUsingARequest = true)
     {
         _logsQueue.Enqueue($"{nameof(HttpServerSimHost)} - Starting ...");
 
@@ -82,7 +82,7 @@ public class HttpServerSimHost : IDisposable
         }
         
         _consoleAppRunner.Start();
-        if (!WaitForServiceUsingARequest())
+        if (waitForServiceUsingARequest && !WaitForServiceUsingARequest())
         {
             throw new InvalidOperationException("Service was not ready");
         }
@@ -145,7 +145,7 @@ public class HttpServerSimHost : IDisposable
         }
     }
 
-    private bool WaitForResponse() => TryFindSection("Response:", "End of Response", out _);
+    private bool WaitForResponse() => TryFindLogSection("Response:", "End of Response", out _);
 
     private string FlushLogs()
     {
@@ -159,7 +159,32 @@ public class HttpServerSimHost : IDisposable
         return logs.ToString();
     }
 
-    public bool TryFindSection(string startToken, string endToken, out string? section)
+    public bool TryFindLog(string token, TimeSpan? timeout = null)
+    {
+        var logs = new StringBuilder();
+        timeout = timeout ?? _timeout;
+        var expiration = DateTimeOffset.UtcNow + timeout;
+        while (expiration > DateTimeOffset.UtcNow)
+        {
+            Thread.Sleep(10);
+
+            if (_logsQueue.TryDequeue(out var log))
+            {
+                logs.AppendLine(log);
+                OnLogReceived(new ConsoleAppRunnerEventArgs(log));
+            }
+
+            var currentLogs = logs.ToString();
+            if (currentLogs.Contains(token))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public bool TryFindLogSection(string startToken, string endToken, out string? section)
     {
         var logs = new StringBuilder();
         var expiration = DateTimeOffset.UtcNow + _timeout;
