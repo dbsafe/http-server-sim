@@ -41,7 +41,7 @@ End of Response";
 
     private void FindRequestLogAndResponseLog()
     {
-        Assert.IsTrue(AppInitializer.TestHost.TryFindSection("Request:", "End of Request", out _), "Request log not found");
-        Assert.IsTrue(AppInitializer.TestHost.TryFindSection("Response:", "End of Response", out _actualResponseLog), "Response log not found");
+        Assert.IsTrue(AppInitializer.TestHost.TryFindLogSection("Request:", "End of Request", out _), "Request log not found");
+        Assert.IsTrue(AppInitializer.TestHost.TryFindLogSection("Response:", "End of Response", out _actualResponseLog), "Response log not found");
     }
 }

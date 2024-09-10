@@ -64,6 +64,7 @@ public class ConsoleAppRunner : IDisposable
         {
             if (disposing)
             {
+                Stop();
                 _process.Dispose();
             }
 
