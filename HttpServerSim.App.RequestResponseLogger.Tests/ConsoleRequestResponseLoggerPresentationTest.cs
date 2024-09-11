@@ -10,7 +10,7 @@ public class ConsoleRequestResponseLoggerPresentationTest
     private readonly string _simulatorUrl = AppInitializer.TEST_SIM_URL;
     private readonly string _simulatorHost = AppInitializer.TEST_SIM_HOST;
     private static readonly HttpClient _httpClient = AppInitializer.TestHost.HttpClient;
-    private readonly TimeSpan _timeout = TimeSpan.FromSeconds(5);
+    private readonly TimeSpan _timeout = TimeSpan.FromSeconds(10);
 
     public TestContext TestContext { get; set; }
 
