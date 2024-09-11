@@ -28,7 +28,7 @@ public class AppConfig : IConsoleRequestResponseLoggerConfig, IFileRequestRespon
     public int DefaultStatusCode { get; set; } = 200;
     public string? DefaultContentType { get; set; }
     public string? DefaultContentValue { get; set; }
-    public int? DefaultDelay { get; set; }
+    public int? DefaultDelayMin { get; set; }
     public int? DefaultDelayMax { get; set; }
 
     public string? SaveRequests { get; set; }

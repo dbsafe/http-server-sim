@@ -32,9 +32,9 @@ public class AppConfigLoader
         sb.AppendLine($"{PadRight("--DefaultContentType <value>")}The Content-Type used in a response message when no rule matching the request is found.");
         sb.AppendLine($"{PadRight("--DefaultContentValue <value>")}The Content used in a response message when no rule matching the request is found.");
 
-        sb.AppendLine($"{PadRight("--DefaultDelay <value>")}The delay (in milliseconds) before sending a default response message when no matching rule for the request is found. Default: 0.");
+        sb.AppendLine($"{PadRight("--DefaultDelayMin <value>")}The delay (in milliseconds) before sending a default response message when no matching rule for the request is found. Default: 0.");
         sb.AppendLine($"{PadRight("--DefaultDelayMax <value>")}The maximum delay (in milliseconds) before sending a default response message when no matching rule for the request is found.");
-        sb.AppendLine($"{PadRight("")}When --DefaultDelayMax is specified, the actual delay will be a random value between --DefaultDelay and --DefaultDelayMax.");
+        sb.AppendLine($"{PadRight("")}When --DefaultDelayMax is specified, the actual delay will be a random value between --DefaultDelayMin and --DefaultDelayMax.");
 
         sb.AppendLine($"{PadRight("--DefaultStatusCode <value>")}The HTTP status code used in a response message when no rule matching the request is found. Default: 200.");
 

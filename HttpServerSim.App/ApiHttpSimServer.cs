@@ -106,11 +106,11 @@ public sealed class ApiHttpSimServer : IDisposable
 
         var defaultResponse = new DefaultResponse { Response = response };
         
-        if (appConfig.DefaultDelay.HasValue || appConfig.DefaultDelayMax.HasValue)
+        if (appConfig.DefaultDelayMin.HasValue || appConfig.DefaultDelayMax.HasValue)
         {
             defaultResponse.Delay = new DelayRange
             {
-                Min = appConfig.DefaultDelay ?? 0,
+                Min = appConfig.DefaultDelayMin ?? 0,
                 Max = appConfig.DefaultDelayMax
             };
         }

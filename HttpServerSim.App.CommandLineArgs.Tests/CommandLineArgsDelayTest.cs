@@ -17,18 +17,18 @@ public class CommandLineArgsDelayTest : BaseTest
     }
 
     [TestMethod]
-    public async Task Given_arg_DefaultDelay_is_two_seconds_Should_respond_after_two_seconds()
+    public async Task Given_arg_DefaultDelayMin_is_two_seconds_Should_respond_after_two_seconds()
     {
-        var args = $"--Url {TEST_SIM_URL} --DefaultDelay 2000";
+        var args = $"--Url {TEST_SIM_URL} --DefaultDelayMin 2000";
         var elapsedMilliseconds = await TimeRequest(args);
         Assert.IsTrue(elapsedMilliseconds >= 2000);
         Assert.IsTrue(elapsedMilliseconds < 2500);
     }
 
     [TestMethod]
-    public async Task Given_arg_DefaultDelay_is_one_second_and_DefaultDelayMax_is_two_seconds_Should_respond_between_one_and_two_seconds()
+    public async Task Given_arg_DefaultDelayMin_is_one_second_and_DefaultDelayMax_is_two_seconds_Should_respond_between_one_and_two_seconds()
     {
-        var args = $"--Url {TEST_SIM_URL} --DefaultDelay 1000 --DefaultDelayMax 2000";
+        var args = $"--Url {TEST_SIM_URL} --DefaultDelayMin 1000 --DefaultDelayMax 2000";
         var elapsedMilliseconds = await TimeRequest(args);
         Assert.IsTrue(elapsedMilliseconds >= 1000);
         Assert.IsTrue(elapsedMilliseconds < 2100);
