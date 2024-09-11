@@ -34,17 +34,16 @@ steps:
     projects: './HttpServerSim.App.RequestResponseLogger.Tests/HttpServerSim.App.RequestResponseLogger.Tests.csproj'
 
 - task: DotNetCoreCLI@2
-  displayName: Run Unit Tests - Default Response
+  displayName: Run Unit Tests - Rules
   inputs:
     command: 'test'
-    projects: './HttpServerSim.App.DefaultResponse.Tests/HttpServerSim.App.DefaultResponse.Tests.csproj'
-
+    projects: './HttpServerSim.App.Rules.Tests/HttpServerSim.App.Rules.Tests.csproj'
 
 - task: DotNetCoreCLI@2
-  displayName: Run Unit Tests - Invalid Args
+  displayName: Run Unit Tests - CommandLineArgs
   inputs:
     command: 'test'
-    projects: './HttpServerSim.InvalidArgs.Tests/HttpServerSim.InvalidArgs.Tests.csproj'
+    projects: './HttpServerSim.App.CommandLineArgs.Tests/HttpServerSim.App.CommandLineArgs.Tests.csproj'
 
 - script: docker build -t http-server-sim-build -f Dockerfile .
   displayName: Build Docker image with HttpServerSim.App

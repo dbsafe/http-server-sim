@@ -21,7 +21,7 @@ public class CommandLineArgsDelayTest : BaseTest
     {
         var args = $"--Url {TEST_SIM_URL} --DefaultDelay 2000";
         var elapsedMilliseconds = await TimeRequest(args);
-        Assert.IsTrue(elapsedMilliseconds > 2000);
+        Assert.IsTrue(elapsedMilliseconds >= 2000);
         Assert.IsTrue(elapsedMilliseconds < 2500);
     }
 
@@ -30,7 +30,7 @@ public class CommandLineArgsDelayTest : BaseTest
     {
         var args = $"--Url {TEST_SIM_URL} --DefaultDelay 1000 --DefaultDelayMax 2000";
         var elapsedMilliseconds = await TimeRequest(args);
-        Assert.IsTrue(elapsedMilliseconds > 1000);
+        Assert.IsTrue(elapsedMilliseconds >= 1000);
         Assert.IsTrue(elapsedMilliseconds < 2100);
     }
 

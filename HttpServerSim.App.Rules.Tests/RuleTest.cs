@@ -5,6 +5,7 @@ using System.Diagnostics;
 namespace HttpServerSim.App.Rules.Tests;
 
 // TODO: Consolidate all the test that test rules being passed in this class/project
+// TODO: Add tests to use rules from a file
 [TestClass]
 public class RuleTest
 {
@@ -52,7 +53,7 @@ public class RuleTest
 
         var elapsedMilliseconds = await TimeRequestAsync(rule, "rule-with-delay-min", 202);
 
-        Assert.IsTrue(elapsedMilliseconds > 2000);
+        Assert.IsTrue(elapsedMilliseconds >= 2000);
         Assert.IsTrue(elapsedMilliseconds < 2500);
     }
 
@@ -66,7 +67,7 @@ public class RuleTest
             .Rule;
 
         var elapsedMilliseconds = await TimeRequestAsync(rule, "rule-with-delay-min-and-delay-max", 203);
-        Assert.IsTrue(elapsedMilliseconds > 1000);
+        Assert.IsTrue(elapsedMilliseconds >= 1000);
         Assert.IsTrue(elapsedMilliseconds < 2100);
     }
 
