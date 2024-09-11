@@ -10,9 +10,9 @@ Usage: http-server-sim [options...]
 --ControlUrl <url>                 URL for managing rules dynamically. Not required. Example: http://localhost:5001.
 --DefaultContentType <value>       The Content-Type used in a response message when no rule matching the request is found.
 --DefaultContentValue <value>      The Content used in a response message when no rule matching the request is found.
---DefaultDelay <value>             The delay (in milliseconds) before sending a default response message when no matching rule for the request is found. Default: 0.
+--DefaultDelayMin <value>          The delay (in milliseconds) before sending a default response message when no matching rule for the request is found. Default: 0.
 --DefaultDelayMax <value>          The maximum delay (in milliseconds) before sending a default response message when no matching rule for the request is found.
-                                   When --DefaultDelayMax is specified, the actual delay will be a random value between --DefaultDelay and --DefaultDelayMax.
+                                   When --DefaultDelayMax is specified, the actual delay will be a random value between --DefaultDelayMin and --DefaultDelayMax.
 --DefaultStatusCode <value>        The HTTP status code used in a response message when no rule matching the request is found. Default: 200.
 --Help                             Prints this help.
 --LogControlRequestAndResponse     Whether control requests and responses are logged. Default: false.
