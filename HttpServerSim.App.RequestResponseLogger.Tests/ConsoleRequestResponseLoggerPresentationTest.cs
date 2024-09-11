@@ -1,5 +1,3 @@
-#nullable disable
-
 // Ignore Spelling: json
 
 using System.Net.Http.Json;
@@ -11,8 +9,7 @@ public class ConsoleRequestResponseLoggerPresentationTest
 {
     private readonly string _simulatorUrl = AppInitializer.TestHost.SimulatorUrl;
     private static readonly HttpClient _httpClient = AppInitializer.TestHost.HttpClient;
-    private string _actualRequestLog;
-    private string _actualResponseLog;
+    private readonly TimeSpan _timeout = TimeSpan.FromSeconds(5);
 
     public TestContext TestContext { get; set; }
 
@@ -33,8 +30,9 @@ public class ConsoleRequestResponseLoggerPresentationTest
     [TestMethod]
     public async Task RequestLog_Simple_request()
     {
+        var task = TryFindRequestLog();
+
         await _httpClient.GetAsync($"{_simulatorUrl}/simple-request");
-        LoadRequestLogAndResponseLog();
 
         var expectedRequestLog = @"Request:
 HTTP/1.1 - GET - http://localhost:5000/simple-request
@@ -43,14 +41,16 @@ Headers:
 Body:
 [Not present]
 End of Request";
-        Assert.AreEqual(expectedRequestLog, _actualRequestLog);
+        Assert.IsTrue(task.Wait(_timeout));
+        Assert.AreEqual(expectedRequestLog, task.Result);
     }
 
     [TestMethod]
     public async Task RequestLog_Request_with_query_parameters()
     {
+        var task = TryFindRequestLog();
+
         await _httpClient.GetAsync($"{_simulatorUrl}/simple-request&p1=10&p2=Juan");
-        LoadRequestLogAndResponseLog();
 
         var expectedRequestLog = @"Request:
 HTTP/1.1 - GET - http://localhost:5000/simple-request&p1=10&p2=Juan
@@ -59,17 +59,17 @@ Headers:
 Body:
 [Not present]
 End of Request";
-        Assert.AreEqual(expectedRequestLog, _actualRequestLog);
+        Assert.IsTrue(task.Wait(_timeout));
+        Assert.AreEqual(expectedRequestLog, task.Result);
     }
 
     [TestMethod]
     public async Task RequestLog_Request_with_content()
     {
+        var task = TryFindRequestLog();
+
         var body = new { Id = 1, Name = "name-1" };
-
         await _httpClient.PostAsJsonAsync($"{_simulatorUrl}/simple-request", body);
-
-        LoadRequestLogAndResponseLog();
 
         var expectedRequestLog = @"Request:
 HTTP/1.1 - POST - http://localhost:5000/simple-request
@@ -80,16 +80,17 @@ Headers:
 Body:
 {""id"":1,""name"":""name-1""}
 End of Request";
-        Assert.AreEqual(expectedRequestLog, _actualRequestLog);
+        Assert.IsTrue(task.Wait(_timeout));
+        Assert.AreEqual(expectedRequestLog, task.Result);
     }
 
     [TestMethod]
     public async Task Request_Given_a_request_with_a_body_larger_than_the_limit_Body_should_be_truncated()
     {
+        var task = TryFindRequestLog();
+
         string body = "111111111122222222223333333333444444444455555555556666666666";
         await _httpClient.PostAsJsonAsync($"{_simulatorUrl}/simple-request", body);
-
-        LoadRequestLogAndResponseLog();
 
         var expectedRequestLog = @"Request:
 HTTP/1.1 - POST - http://localhost:5000/simple-request
@@ -101,14 +102,16 @@ Body:
 ""11111111112222222222333333333344444444445555555555
 [Body truncated. Read 51 characters]
 End of Request";
-        Assert.AreEqual(expectedRequestLog, _actualRequestLog);
+        Assert.IsTrue(task.Wait(_timeout));
+        Assert.AreEqual(expectedRequestLog, task.Result);
     }
 
     [TestMethod]
     public async Task ResponseLog_Simple_response()
     {
+        var task = TryFindResponseLog();
+
         await _httpClient.GetAsync($"{_simulatorUrl}/simple-response");
-        LoadRequestLogAndResponseLog();
 
         var expectedResponseLog = @"Response:
 Status Code: 200
@@ -117,14 +120,16 @@ Headers:
 Body:
 [Not present]
 End of Response";
-        Assert.AreEqual(expectedResponseLog, _actualResponseLog);
+        Assert.IsTrue(task.Wait(_timeout));
+        Assert.AreEqual(expectedResponseLog, task.Result);
     }
 
     [TestMethod]
     public async Task ResponseLog_Response_with_headers()
     {
+        var task = TryFindResponseLog();
+
         await _httpClient.GetAsync($"{_simulatorUrl}/response-with-headers");
-        LoadRequestLogAndResponseLog();
 
         var expectedResponseLog = @"Response:
 Status Code: 200
@@ -134,14 +139,16 @@ Headers:
 Body:
 [Not present]
 End of Response";
-        Assert.AreEqual(expectedResponseLog, _actualResponseLog);
+        Assert.IsTrue(task.Wait(_timeout));
+        Assert.AreEqual(expectedResponseLog, task.Result);
     }
 
     [TestMethod]
     public async Task ResponseLog_Response_with_json_content()
     {
+        var task = TryFindResponseLog();
+
         await _httpClient.GetAsync($"{_simulatorUrl}/response-with-json-content");
-        LoadRequestLogAndResponseLog();
 
         var expectedResponseLog = @"Response:
 Status Code: 200
@@ -150,14 +157,16 @@ Headers:
 Body:
 {""name"":""Juan""}
 End of Response";
-        Assert.AreEqual(expectedResponseLog, _actualResponseLog);
+        Assert.IsTrue(task.Wait(_timeout));
+        Assert.AreEqual(expectedResponseLog, task.Result);
     }
 
     [TestMethod]
     public async Task ResponseLog_Given_a_response_with_a_body_larger_than_the_limit_Body_should_be_truncated()
     {
+        var task = TryFindResponseLog();
+
         await _httpClient.GetAsync($"{_simulatorUrl}/get-response-with-large-json-content");
-        LoadRequestLogAndResponseLog();
 
         var expectedResponseLog = @"Response:
 Status Code: 200
@@ -167,12 +176,11 @@ Body:
 ""111111111122222222223333333333444444444455555555556
 [Body truncated. Read 52 characters]
 End of Response";
-        Assert.AreEqual(expectedResponseLog, _actualResponseLog);
+        Assert.IsTrue(task.Wait(_timeout));
+        Assert.AreEqual(expectedResponseLog, task.Result);
     }
 
-    private void LoadRequestLogAndResponseLog()
-    {
-        Assert.IsTrue(AppInitializer.TestHost.TryFindLogSection("Request:", "End of Request", out _actualRequestLog), "Request log not found");
-        Assert.IsTrue(AppInitializer.TestHost.TryFindLogSection("Response:", "End of Response", out _actualResponseLog), "Response log not found");
-    }
+    private static Task<string> TryFindRequestLog() => AppInitializer.TestHost.TryFindLogSection("Request:", "End of Request");
+
+    private static Task<string> TryFindResponseLog() => AppInitializer.TestHost.TryFindLogSection("Response:", "End of Response");
 }

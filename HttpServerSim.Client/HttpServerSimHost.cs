@@ -1,10 +1,7 @@
 ﻿// Ignore Spelling: App
 
 using System;
-using System.Collections.Concurrent;
 using System.Net.Http;
-using System.Text;
-using System.Threading;
 
 namespace HttpServerSim.Client;
 
@@ -18,7 +15,6 @@ public class HttpServerSimHost : IDisposable
     public event EventHandler<ConsoleAppRunnerEventArgs>? LogReceived;
 
     public static readonly HttpClient HttpClient = new();        
-    private readonly ConcurrentQueue<string> _logsQueue = new();
 
     public HttpServerSimHost(string simulatorUrl, string workingDirectory, string filenameOrCommand, string args)
     {
@@ -29,6 +25,7 @@ public class HttpServerSimHost : IDisposable
     }
 
     protected virtual void OnLogReceived(ConsoleAppRunnerEventArgs e) => LogReceived?.Invoke(this, e);
+    private void Log(string data) => LogReceived?.Invoke(this, new ConsoleAppRunnerEventArgs($"{nameof(HttpServerSimHost)} - {data}"));
 
     protected virtual void Dispose(bool disposing)
     {
@@ -66,15 +63,12 @@ public class HttpServerSimHost : IDisposable
 
     private void ConsoleAppRunner_OutputDataReceived(object sender, ConsoleAppRunnerEventArgs e)
     {
-        if (e.Data is not null)
-        {
-            _logsQueue.Enqueue(e.Data);
-        }
+        OnLogReceived(e);
     }
 
-    public void Start(bool waitForServiceUsingARequest = true)
+    public void Start()
     {
-        _logsQueue.Enqueue($"{nameof(HttpServerSimHost)} - Starting ...");
+        Log("Starting ...");
 
         if (SendSimpleRequest())
         {
@@ -82,142 +76,28 @@ public class HttpServerSimHost : IDisposable
         }
         
         _consoleAppRunner.Start();
-        if (waitForServiceUsingARequest && !WaitForServiceUsingARequest())
-        {
-            throw new InvalidOperationException("Service was not ready");
-        }
     }
 
     public void Stop()
     {
-        _logsQueue.Enqueue($"{nameof(HttpServerSimHost)} - Stopping ...");
-        FlushLogs();
+        Log("Stopping ...");
         _consoleAppRunner.Stop();
     }
 
     public bool RunAndWaitForExit(TimeSpan timeout) 
     {
-        _logsQueue.Enqueue($"{nameof(HttpServerSimHost)} - Starting process and waiting ...");
+        Log("Starting process and waiting ...");
+        
         var stopped =_consoleAppRunner.RunAndWaitForExit(timeout);
         if (stopped)
         {
-            _logsQueue.Enqueue($"{nameof(HttpServerSimHost)} - Stopped");
+            Log("Stopped");
         }
         else
         {
-            _logsQueue.Enqueue($"{nameof(HttpServerSimHost)} - Failed to stop");
+            Log("Failed to stop");
         }
 
-        FlushLogs();
         return stopped;
-    }
-    
-    private bool WaitForServiceUsingARequest()
-    {
-        static void OutputDataReceived(object sender, ConsoleAppRunnerEventArgs e)
-        {
-            // This is used for debugging only because the same logs are logged from the test.
-            // Requires adding TestContext testContext to the constructor
-            // testContext.WriteLine(e.Data);
-        }
-
-        _consoleAppRunner.OutputDataReceived += OutputDataReceived;
-        try
-        {
-            var expiration = DateTimeOffset.UtcNow + _timeout;
-            while (expiration > DateTimeOffset.UtcNow)
-            {
-                // Attempt to send request multiple times because the App is initializing
-                if (SendSimpleRequest())
-                {
-                    // Attempt to get the response only one time because the app is already initialized
-                    return WaitForResponse();
-                }
-
-                Thread.Sleep(100);
-            }
-
-            return false;
-        }
-        finally
-        {
-            _consoleAppRunner.OutputDataReceived -= OutputDataReceived;
-        }
-    }
-
-    private bool WaitForResponse() => TryFindLogSection("Response:", "End of Response", out _);
-
-    private string FlushLogs()
-    {
-        var logs = new StringBuilder();
-        while (_logsQueue.TryDequeue(out var log))
-        {
-            logs.Append(log);
-            OnLogReceived(new ConsoleAppRunnerEventArgs(log));
-        }
-
-        return logs.ToString();
-    }
-
-    public bool TryFindLog(string token, TimeSpan? timeout = null)
-    {
-        var logs = new StringBuilder();
-        timeout = timeout ?? _timeout;
-        var expiration = DateTimeOffset.UtcNow + timeout;
-        while (expiration > DateTimeOffset.UtcNow)
-        {
-            Thread.Sleep(10);
-
-            if (_logsQueue.TryDequeue(out var log))
-            {
-                logs.AppendLine(log);
-                OnLogReceived(new ConsoleAppRunnerEventArgs(log));
-            }
-
-            var currentLogs = logs.ToString();
-            if (currentLogs.Contains(token))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public bool TryFindLogSection(string startToken, string endToken, out string? section)
-    {
-        var logs = new StringBuilder();
-        var expiration = DateTimeOffset.UtcNow + _timeout;
-        while (expiration > DateTimeOffset.UtcNow)
-        {
-            Thread.Sleep(10);
-
-            if (_logsQueue.TryDequeue(out var log))
-            {
-                logs.AppendLine(log);
-                OnLogReceived(new ConsoleAppRunnerEventArgs(log));
-            }
-
-            var currentLogs = logs.ToString();
-            var startIndex = currentLogs.IndexOf(startToken);
-            var endIndex = currentLogs.IndexOf(endToken);
-
-            if (startIndex == -1 || endIndex == -1)
-            {
-                continue;
-            }
-
-            if (startIndex > endIndex)
-            {
-                section = null;
-                return false;
-            }
-
-            section = currentLogs.Substring(startIndex, endIndex - startIndex + endToken.Length);
-            return true;
-        }
-
-        section = null;
-        return false;
     }
 }

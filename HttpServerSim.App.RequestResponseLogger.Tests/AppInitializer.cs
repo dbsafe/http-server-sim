@@ -1,7 +1,5 @@
 ﻿// Ignore Spelling: App
 
-#nullable disable
-
 using HttpServerSim.Tests.Shared;
 
 namespace HttpServerSim.App.RequestResponseLogger.Tests;
@@ -33,6 +31,7 @@ public static class AppInitializer
     public static void StopApp()
     {
         TestHost?.Stop();
+        TestHost?.FlushLogs();
         TestHost?.Dispose();
     }
 }

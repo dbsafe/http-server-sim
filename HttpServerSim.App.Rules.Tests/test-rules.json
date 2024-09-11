@@ -1,0 +1,17 @@
+{
+  "rules": [
+    {
+      "name": "rule-without-delay",
+      "conditions": [
+        {
+          "field": "Path",
+          "operator": "Contains",
+          "value": "rule-without-delay"
+        }
+      ],
+      "response": {
+        "statusCode":  201
+      }
+    }
+  ]
+}

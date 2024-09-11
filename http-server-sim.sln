@@ -24,13 +24,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerSim.App.Tests", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerSim.App.RequestResponseLogger.Tests", "HttpServerSim.App.RequestResponseLogger.Tests\HttpServerSim.App.RequestResponseLogger.Tests.csproj", "{C7AA6AD2-3C87-4D54-8098-A24D221B3D06}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerSim.App.DefaultResponse.Tests", "HttpServerSim.App.DefaultResponse.Tests\HttpServerSim.App.DefaultResponse.Tests.csproj", "{19B2CBD1-2B2B-4634-BF8C-B317DFF13984}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerSim.Tests.Shared", "HttpServerSim.Tests.Shared\HttpServerSim.Tests.Shared.csproj", "{9017EAAE-89EC-4C25-9F8D-E3F2C855E9F6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerSim.InvalidArgs.Tests", "HttpServerSim.InvalidArgs.Tests\HttpServerSim.InvalidArgs.Tests.csproj", "{43DC44EC-80E2-4DDB-8A55-21BAE438F29E}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerSim.App.CommandLineArgs.Tests", "HttpServerSim.App.CommandLineArgs.Tests\HttpServerSim.App.CommandLineArgs.Tests.csproj", "{A9231E7F-EDF4-4567-AE34-6531C38F7FA9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerSim.App.Rules.Tests", "HttpServerSim.App.Rules.Tests\HttpServerSim.App.Rules.Tests.csproj", "{F25E8BC1-9E62-4405-9407-8E3D42D80401}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -58,22 +56,18 @@ Global
 		{C7AA6AD2-3C87-4D54-8098-A24D221B3D06}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7AA6AD2-3C87-4D54-8098-A24D221B3D06}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7AA6AD2-3C87-4D54-8098-A24D221B3D06}.Release|Any CPU.Build.0 = Release|Any CPU
-		{19B2CBD1-2B2B-4634-BF8C-B317DFF13984}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{19B2CBD1-2B2B-4634-BF8C-B317DFF13984}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{19B2CBD1-2B2B-4634-BF8C-B317DFF13984}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{19B2CBD1-2B2B-4634-BF8C-B317DFF13984}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9017EAAE-89EC-4C25-9F8D-E3F2C855E9F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9017EAAE-89EC-4C25-9F8D-E3F2C855E9F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9017EAAE-89EC-4C25-9F8D-E3F2C855E9F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9017EAAE-89EC-4C25-9F8D-E3F2C855E9F6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{43DC44EC-80E2-4DDB-8A55-21BAE438F29E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{43DC44EC-80E2-4DDB-8A55-21BAE438F29E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{43DC44EC-80E2-4DDB-8A55-21BAE438F29E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{43DC44EC-80E2-4DDB-8A55-21BAE438F29E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A9231E7F-EDF4-4567-AE34-6531C38F7FA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A9231E7F-EDF4-4567-AE34-6531C38F7FA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A9231E7F-EDF4-4567-AE34-6531C38F7FA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A9231E7F-EDF4-4567-AE34-6531C38F7FA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F25E8BC1-9E62-4405-9407-8E3D42D80401}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F25E8BC1-9E62-4405-9407-8E3D42D80401}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F25E8BC1-9E62-4405-9407-8E3D42D80401}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F25E8BC1-9E62-4405-9407-8E3D42D80401}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
