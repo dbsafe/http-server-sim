@@ -87,4 +87,10 @@ public static class RuleBuilderExtensionMethods
         var response = new HttpSimResponse { StatusCode = statusCode, Headers = headers };
         return WithResponse(ruleBuilder, response);
     }
+
+    public static RuleBuilder WithDelay(this RuleBuilder ruleBuilder, int delayMin, int? delayMax = null)
+    {
+        ruleBuilder.Rule.Delay = new DelayRange { Min = delayMin, Max = delayMax };
+        return ruleBuilder;
+    }
 }

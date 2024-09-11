@@ -12,4 +12,5 @@ public interface IHttpSimRuleManager
     IHttpSimRuleManager When(Func<HttpSimRequest, bool> ruleEvaluationFunc);
 
     IHttpSimRuleManager ReturnHttpResponse(HttpSimResponse response);
+    IHttpSimRuleManager IntroduceDelay(DelayRange? delay);
 }

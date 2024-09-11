@@ -11,7 +11,7 @@ public interface IHttpSimRule
 {
     string Name { get; }
     HttpSimResponse? Response { get; set; }
-    DelayRange? Delay { get; }
+    DelayRange? Delay { get; set; }
 
     [JsonIgnore]
     Func<HttpSimRequest, bool> RuleEvaluationFunc { get; set; }

@@ -73,14 +73,17 @@ internal static class HttpSimRuleResolver
 
             logger.LogDebug($"Rule matching request found. '{httpSimRule.Name}'");
             httpSimRule.AddRequest(httpSimRequest);
+
             if (httpSimRule.Response == null)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
-                await IntroduceDelayAsync(logger, httpSimRule.Delay);
-                return;
+            }
+            else
+            {
+                await SetHttpResponseAsync(context, httpSimRule.Response, logger, responseFilesFolder);
             }
 
-            await SetHttpResponseAsync(context, httpSimRule.Response, logger, responseFilesFolder);
+            await IntroduceDelayAsync(logger, httpSimRule.Delay);
         };
     }
 

@@ -12,6 +12,13 @@ public class HttpSimRuleBuilder(string name) : IHttpSimRuleManager
 {
     public IHttpSimRule Rule { get; } = new HttpSimRule(name);
 
+    public IHttpSimRuleManager IntroduceDelay(DelayRange? delay)
+    {
+        EnsureDelayIsNotSet();
+        Rule.Delay = delay;
+        return this;
+    }
+
     public IHttpSimRuleManager ReturnHttpResponse(HttpSimResponse response)
     {
         EnsureResponseIsNotSet();
@@ -44,7 +51,15 @@ public class HttpSimRuleBuilder(string name) : IHttpSimRuleManager
     {
         if (Rule.Response != null)
         {
-            throw new InvalidOperationException("Return cannot be set more than once");
+            throw new InvalidOperationException($"{nameof(Rule.Response)} cannot be set more than once");
+        }
+    }
+
+    private void EnsureDelayIsNotSet()
+    {
+        if (Rule.Delay != null)
+        {
+            throw new InvalidOperationException($"{nameof(Rule.Delay)} cannot be set more than once");
         }
     }
 }
