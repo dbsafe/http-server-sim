@@ -30,7 +30,8 @@ public static class RulesConfigHelper
 
             var ruleManager = ruleStore.CreateRule(configRule.Name)
                 .When(BuildFuncFromRule(logger, configRule))
-                .ReturnHttpResponse(apiResponse);
+                .ReturnHttpResponse(apiResponse)
+                .IntroduceDelay(configRule.Delay);
             ruleManager.Rule.Conditions = configRule.Conditions;
         }
 
