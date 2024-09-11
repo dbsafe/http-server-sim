@@ -7,7 +7,8 @@ namespace HttpServerSim.App.RequestResponseLogger.Tests;
 [TestClass]
 public class FileRequestResponseLoggerPresentationTest
 {
-    private readonly string _simulatorUrl = AppInitializer.TestHost.SimulatorUrl;
+    private readonly string _simulatorUrl = AppInitializer.TEST_SIM_URL;
+    private readonly string _simulatorHost = AppInitializer.TEST_SIM_HOST;
     private static readonly HttpClient _httpClient = AppInitializer.TestHost.HttpClient;
     private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(10);
 
@@ -42,9 +43,9 @@ public class FileRequestResponseLoggerPresentationTest
 
         Assert.IsTrue(WaitForFilesInHistoryDirectory(2), "Expected files are not present in the history folder");
 
-        var expectedRequestContent = @"HTTP/1.1 - GET - http://localhost:5000/simple-request
+        var expectedRequestContent = @$"HTTP/1.1 - GET - {_simulatorUrl}/simple-request
 Headers:
-  Host: localhost:5000
+  Host: {_simulatorHost}
 Body:
 [Not present]";
 

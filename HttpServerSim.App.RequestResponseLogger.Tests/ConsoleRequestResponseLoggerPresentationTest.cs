@@ -7,7 +7,8 @@ namespace HttpServerSim.App.RequestResponseLogger.Tests;
 [TestClass]
 public class ConsoleRequestResponseLoggerPresentationTest
 {
-    private readonly string _simulatorUrl = AppInitializer.TestHost.SimulatorUrl;
+    private readonly string _simulatorUrl = AppInitializer.TEST_SIM_URL;
+    private readonly string _simulatorHost = AppInitializer.TEST_SIM_HOST;
     private static readonly HttpClient _httpClient = AppInitializer.TestHost.HttpClient;
     private readonly TimeSpan _timeout = TimeSpan.FromSeconds(5);
 
@@ -34,10 +35,10 @@ public class ConsoleRequestResponseLoggerPresentationTest
 
         await _httpClient.GetAsync($"{_simulatorUrl}/simple-request");
 
-        var expectedRequestLog = @"Request:
-HTTP/1.1 - GET - http://localhost:5000/simple-request
+        var expectedRequestLog = @$"Request:
+HTTP/1.1 - GET - {_simulatorUrl}/simple-request
 Headers:
-  Host: localhost:5000
+  Host: {_simulatorHost}
 Body:
 [Not present]
 End of Request";
@@ -52,10 +53,10 @@ End of Request";
 
         await _httpClient.GetAsync($"{_simulatorUrl}/simple-request&p1=10&p2=Juan");
 
-        var expectedRequestLog = @"Request:
-HTTP/1.1 - GET - http://localhost:5000/simple-request&p1=10&p2=Juan
+        var expectedRequestLog = @$"Request:
+HTTP/1.1 - GET - {_simulatorUrl}/simple-request&p1=10&p2=Juan
 Headers:
-  Host: localhost:5000
+  Host: {_simulatorHost}
 Body:
 [Not present]
 End of Request";
@@ -71,14 +72,14 @@ End of Request";
         var body = new { Id = 1, Name = "name-1" };
         await _httpClient.PostAsJsonAsync($"{_simulatorUrl}/simple-request", body);
 
-        var expectedRequestLog = @"Request:
-HTTP/1.1 - POST - http://localhost:5000/simple-request
+        var expectedRequestLog = @$"Request:
+HTTP/1.1 - POST - {_simulatorUrl}/simple-request
 Headers:
-  Host: localhost:5000
+  Host: {_simulatorHost}
   Content-Type: application/json; charset=utf-8
   Transfer-Encoding: chunked
 Body:
-{""id"":1,""name"":""name-1""}
+{{""id"":1,""name"":""name-1""}}
 End of Request";
         Assert.IsTrue(task.Wait(_timeout));
         Assert.AreEqual(expectedRequestLog, task.Result);
@@ -92,10 +93,10 @@ End of Request";
         string body = "111111111122222222223333333333444444444455555555556666666666";
         await _httpClient.PostAsJsonAsync($"{_simulatorUrl}/simple-request", body);
 
-        var expectedRequestLog = @"Request:
-HTTP/1.1 - POST - http://localhost:5000/simple-request
+        var expectedRequestLog = @$"Request:
+HTTP/1.1 - POST - {_simulatorUrl}/simple-request
 Headers:
-  Host: localhost:5000
+  Host: {_simulatorHost}
   Content-Type: application/json; charset=utf-8
   Transfer-Encoding: chunked
 Body:
