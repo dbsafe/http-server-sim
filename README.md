@@ -147,6 +147,9 @@ http-server-sim --SaveRequests messages-history --SaveResponses messages-history
 | --ControlUrl `<url>`             | URL for managing rules dynamically. Not required. Example: `http://localhost:5001`.               |
 | --DefaultContentType `<value>`   | The Content-Type used in a response message when no rule matching the request is found.           |
 | --DefaultContentValue `<value>`  | The Content used in a response message when no rule matching the request is found.                |
+| --DefaultDelayMin `<value>`      | The delay (in milliseconds) before sending a default response message when no matching rule for the request is found. Default: 0.|
+| --DefaultDelayMax `<value>`      | The maximum delay (in milliseconds) before sending a default response message when no matching rule for the request is found.|
+|                                  | When --DefaultDelayMax is specified, the actual delay will be a random value between --DefaultDelayMin and --DefaultDelayMax.|
 | --DefaultStatusCode `<value>`    | The HTTP status code used in a response message when no rule matching the request is found. Default: 200.|
 | --Help                           | Prints the help.                                                                                  |
 | --LogControlRequestAndResponse   | Whether control requests and responses are logged. Default: `false`.                              |
@@ -210,7 +213,7 @@ There are two types of conditions, `Method` and `Path`
 The supported operators are: `Equals`, `StartWith`, and `Contains`
 
 
-## Response messages
+## Rule response messages
 
 When **http-server-sim** identifies a rule that matches a request, it prepares a response message based on the `response` section of the rule.
 
@@ -282,6 +285,27 @@ Example of a response using a json file that exists in the current directory and
   "contentValue": "person-1.json",
   "contentValueType": "File",
   "encoding": "GZip"
+}
+```
+
+## Rule delays
+
+When **http-server-sim** identifies a matching rule for a request, it applies any specified delay associated with that rule.
+A delay can be specified in the `delay` section of a rule, though it's optional. If not provided, the default delay is 0 milliseconds. 
+Delays are expressed in milliseconds.
+
+Example of setting a delay of 5 seconds.
+```json
+"delay": {
+  "min": 5000
+}
+```
+
+Example of setting a random delay between 1 and 10 seconds.
+```json
+"delay": {
+  "min": 1000,
+  "max": 10000
 }
 ```
 
