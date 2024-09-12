@@ -1,0 +1,50 @@
+{
+  "rules": [
+    {
+      "name": "rule-without-delay",
+      "conditions": [
+        {
+          "field": "Path",
+          "operator": "Contains",
+          "value": "201"
+        }
+      ],
+      "response": {
+        "statusCode": 201
+      }
+    },
+    {
+      "name": "rule-with-delay-min",
+      "conditions": [
+        {
+          "field": "Path",
+          "operator": "Contains",
+          "value": "202"
+        }
+      ],
+      "response": {
+        "statusCode": 202
+      },
+      "delay": {
+        "min": 2000
+      }
+    },
+    {
+      "name": "rule-with-delay-min-and-delay-max",
+      "conditions": [
+        {
+          "field": "Path",
+          "operator": "Contains",
+          "value": "203"
+        }
+      ],
+      "response": {
+        "statusCode": 203
+      },
+      "delay": {
+        "min": 1000,
+        "max":  2000
+      }
+    }
+  ]
+}
