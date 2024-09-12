@@ -2,7 +2,7 @@
 
 using HttpServerSim.Tests.Shared;
 
-namespace HttpServerSim.App.Rules.Tests;
+namespace HttpServerSim.App.StaticRules.Tests;
 
 [TestClass]
 public static class AppInitializer
@@ -26,7 +26,7 @@ public static class AppInitializer
     [AssemblyInitialize]
     public static void StartApp(TestContext testContext)
     {
-        var args = $"--DefaultStatusCode 404 --Logging:LogLevel:HttpServerSim Debug --Url {TEST_SIM_URL} --ControlUrl {TEST_SIM_CONTROL_URL}";
+        var args = $"--Rules test-rules.json --DefaultStatusCode 404 --Logging:LogLevel:HttpServerSim Debug --Url {TEST_SIM_URL} --ControlUrl {TEST_SIM_CONTROL_URL}";
         TestHost = new HttpServerSimHostTest(testContext, args, TEST_SIM_URL);
         TestHost.Start();
     }

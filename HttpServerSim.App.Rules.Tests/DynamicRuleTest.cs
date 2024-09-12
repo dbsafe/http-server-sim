@@ -7,18 +7,17 @@ namespace HttpServerSim.App.Rules.Tests;
 // TODO: Consolidate all the test that test rules being passed in this class/project
 // TODO: Add tests to use rules from a file
 [TestClass]
-public class RuleTest
+public class DynamicRuleTest
 {
-    private static readonly HttpClient _httpClient = HttpClientFactory.CreateHttpClient(nameof(RuleTest));
+    private static readonly HttpClient _httpClient = HttpClientFactory.CreateHttpClient(nameof(DynamicRuleTest));
+    private static readonly HttpSimClient _httpSimClient = new(AppInitializer.TEST_SIM_CONTROL_URL);
 
-    private HttpSimClient _httpSimClient;
     public TestContext TestContext { get; set; }
 
     [TestInitialize]
     public void Initialize()
     {
         AppInitializer.Lock();
-        _httpSimClient = new HttpSimClient(AppInitializer.TEST_SIM_CONTROL_URL);
         _httpSimClient.ClearRules();
     }
 

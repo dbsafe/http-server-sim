@@ -34,10 +34,16 @@ steps:
     projects: './HttpServerSim.App.RequestResponseLogger.Tests/HttpServerSim.App.RequestResponseLogger.Tests.csproj'
 
 - task: DotNetCoreCLI@2
-  displayName: Run Unit Tests - Rules
+  displayName: Run Unit Tests - Dynamic Rules
   inputs:
     command: 'test'
     projects: './HttpServerSim.App.Rules.Tests/HttpServerSim.App.Rules.Tests.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: Run Unit Tests - Static Rules
+  inputs:
+    command: 'test'
+    projects: './HttpServerSim.App.StaticRules.Tests/HttpServerSim.App.StaticRules.Tests.csproj'
 
 - task: DotNetCoreCLI@2
   displayName: Run Unit Tests - CommandLineArgs
