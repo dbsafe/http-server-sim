@@ -47,4 +47,26 @@ public class HttpSimRuleStore : IHttpSimRuleStore
             return _rules.Remove(name);
         }
     }
+
+    public void UpdateRule(IHttpSimRule rule)
+    {
+        lock (_lock)
+        {
+            if (_rules.ContainsKey(rule.Name))
+            {
+                _rules[rule.Name] = rule;
+                return;
+            }
+
+            throw new InvalidOperationException("Rule not found.");
+        }
+    }
+
+    public IHttpSimRule? GetRule(string name)
+    {
+        lock (_lock)
+        {
+            return _rules.TryGetValue(name, out IHttpSimRule? rule) ? rule : null;
+        }
+    }
 }

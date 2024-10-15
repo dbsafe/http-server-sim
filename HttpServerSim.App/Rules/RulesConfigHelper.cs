@@ -8,35 +8,58 @@ namespace HttpServerSim.App.Rules;
 
 public static class RulesConfigHelper
 {
-    public static void LoadRules(IEnumerable<ConfigRule>? configRules, string responseFilesFolder, IHttpSimRuleStore ruleStore, ILogger logger)
+    public static IEnumerable<ConfigRule> LoadRules(IEnumerable<ConfigRule>? configRules, string responseFilesFolder, IHttpSimRuleStore ruleStore, ILogger logger)
     {
         if (configRules is null || !configRules.Any())
         {
             logger.LogWarning("There is not rules to load.");
-            return;
+            return [];
         }
 
+        var createdRules = new List<ConfigRule>();
         StringBuilder sb = new();
         sb.AppendLine("Loading Rules - Found:");
         foreach (var configRule in configRules)
         {
             sb.AppendLine($"\t{configRule.Name}");
-
-            var apiResponse = BuildResponseFromRule(logger, configRule, responseFilesFolder);
-            if (apiResponse is null)
+            if (CreateRule(configRule, responseFilesFolder, ruleStore, logger))
             {
-                continue;
+                createdRules.Add(configRule);
             }
-
-            var ruleManager = new HttpSimRuleBuilder(configRule.Name)
-                .When(BuildFuncFromRule(logger, configRule))
-                .ReturnHttpResponse(apiResponse)
-                .IntroduceDelay(configRule.Delay);
-            ruleManager.Rule.Conditions = configRule.Conditions;
-            ruleStore.CreateRule(ruleManager.Rule);
         }
 
         logger.LogDebug(sb.ToString());
+        return createdRules;
+    }
+
+    private static bool CreateRule(ConfigRule configRule, string responseFilesFolder, IHttpSimRuleStore ruleStore, ILogger logger) =>
+        ActionWithRule(configRule, responseFilesFolder, logger, ruleStore.CreateRule);
+
+    public static bool UpdateRule(ConfigRule configRule, string responseFilesFolder, IHttpSimRuleStore ruleStore, ILogger logger) =>
+        ActionWithRule(configRule, responseFilesFolder, logger, ruleStore.UpdateRule);
+
+    private static bool ActionWithRule(ConfigRule configRule, string responseFilesFolder, ILogger logger, Action<IHttpSimRule> action)
+    {
+        var apiResponse = BuildResponseFromRule(logger, configRule, responseFilesFolder);
+        if (apiResponse is null)
+        {
+            return false;
+        }
+
+        var rule = MapToHttpSimRule(configRule, logger, apiResponse);
+        action.Invoke(rule);
+        return true;
+    }
+
+    public static IHttpSimRule MapToHttpSimRule(ConfigRule configRule, ILogger logger, HttpSimResponse apiResponse)
+    {
+        var rule = new HttpSimRuleBuilder(configRule.Name)
+                .When(BuildFuncFromRule(logger, configRule))
+                .ReturnHttpResponse(apiResponse)
+                .IntroduceDelay(configRule.Delay)
+                .Rule;
+        rule.Conditions = configRule.Conditions;
+        return rule;
     }
 
     public static HttpSimResponse? BuildResponseFromRule(ILogger logger, ConfigRule configRule, string responseFilesFolder)

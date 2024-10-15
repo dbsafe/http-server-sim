@@ -26,6 +26,9 @@ public class HttpSimClientTest
     private readonly string _simUrl = "http://localhost:5000";
     private readonly string _controlUrl = "http://localhost:5001";
 
+    private static readonly ConfigRule rule1 = new() { Name = "rule-1", Response = new HttpSimResponse() };
+    private static readonly ConfigRule rule2 = new() { Name = "rule-2", Response = new HttpSimResponse() };
+
     [TestInitialize]
     public void Initialize()
     {
@@ -293,10 +296,47 @@ public class HttpSimClientTest
         _httpSimClient.RuleExists("rule-2").Should().BeTrue();
     }
 
+    [TestMethod]
+    public void GetRule_GivenRuleDoesNotExist_ShouldReturnNull()
+    {
+        CreateRules1And2();
+
+        _httpSimClient.GetRule("rule-3").Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetRule_GivenRuleExist_ShouldReturnTheRule()
+    {
+        CreateRules1And2();
+
+        _httpSimClient.GetRule("rule-1").Should().BeEquivalentTo(rule1);
+    }
+
+    [TestMethod]
+    public void UpdateRule_GivenRuleExist_ShouldUpdateTheRule()
+    {
+        CreateRules1And2();
+
+        var rule11 = new ConfigRule() { Name = "rule-1", Response = new HttpSimResponse { StatusCode = 404 } };
+
+        _httpSimClient.UpdateRule(rule11);
+        _httpSimClient.GetRule("rule-1").Should().BeEquivalentTo(rule11);
+    }
+
+    [TestMethod]
+    public void UpdateRule_GivenRuleDoesNotExist_ShouldThrowAnException()
+    {
+        var action = () =>
+        {
+            var rule3 = new ConfigRule() { Name = "rule-3", Response = new HttpSimResponse() };
+            _httpSimClient.UpdateRule(rule3);
+        };
+
+        action.Should().Throw<Exception>().WithMessage("Rule 'rule-3' not found.");
+    }
+
     private void CreateRules1And2()
     {
-        var rule1 = new ConfigRule { Name = "rule-1", Response = new HttpSimResponse() };
-        var rule2 = new ConfigRule { Name = "rule-2", Response = new HttpSimResponse() };
         _httpSimClient.AddRules([rule1, rule2]);
 
         _httpSimClient.RuleExists(rule1.Name).Should().BeTrue();

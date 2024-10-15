@@ -64,6 +64,23 @@ public class HttpSimClient(string controlUrl)
         return operationResult.Success;
     }
 
+    public ConfigRule? GetRule(string name)
+    {
+        var response = _httpClient.GetAsync($"{_controlUrl}{Routes.RuleByName(name)}").Result;
+        response.EnsureSuccessStatusCode();
+        var operationResult = GetOperationResult<OperationResult<ConfigRule>>(response);
+        return operationResult.Data;
+    }
+
+    public void UpdateRule(ConfigRule rule)
+    {
+        var content = new StringContent(JsonSerializer.Serialize(rule), Encoding.UTF8, "application/json");
+        var response = _httpClient.PutAsync($"{_controlUrl}{Routes.RuleByName(rule.Name)}", content).Result;
+        response.EnsureSuccessStatusCode();
+        var operationResult = EnsureOperationResultSuccess<OperationResult>(response);
+        operationResult.Success.Should().BeTrue();
+    }
+
     public void VerifyThatRuleWasUsed(string name, int times)
     {
         var ruleHits = GetRuleHits(name);

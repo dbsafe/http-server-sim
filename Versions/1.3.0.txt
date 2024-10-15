@@ -4,3 +4,5 @@ What's New?
 - Introduced the ability to add a delay before responding to requests.
 - A delay can be set for the default response using the new command line options: --DefaultDelayMin and --DefaultDelayMax.
 - A delay can be set for each rule using the delay section within the rule configuration.
+- Added Swagger to control endpoint.
+- Control endpoint and HttpSimClient: Added new methods GetAllRules, GetRule, RuleExists, DeleteRule, UpdateRule
