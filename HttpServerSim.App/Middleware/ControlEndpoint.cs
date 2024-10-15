@@ -18,6 +18,19 @@ internal static class ControlEndpoint
     {
         ArgumentNullException.ThrowIfNull(app);
 
+        MapGetAllRules(app, ruleStore, logger);
+        MapGetRule(app, ruleStore, logger);
+        MapCreateRule(app, ruleStore, logger, responseFilesFolder);
+        MapDeleteAllRules(app, ruleStore, logger);
+        MapDeleteRule(app, ruleStore, logger);
+        MapGetRuleHilts(app, ruleStore, logger);
+        MapGetRuleRequests(app, ruleStore, logger);
+
+        return app;
+    }
+
+    private static void MapGetAllRules(IEndpointRouteBuilder app, IHttpSimRuleStore ruleStore, ILogger logger)
+    {
         app.MapGet(Routes.RULES, () =>
         {
             return ExecuteProtected(logger, () =>
@@ -32,7 +45,10 @@ internal static class ControlEndpoint
             operation.Summary = "Get all the rules";
             return operation;
         });
+    }
 
+    private static void MapGetRule(IEndpointRouteBuilder app, IHttpSimRuleStore ruleStore, ILogger logger)
+    {
         app.MapGet(Routes.RULE, ([FromRoute] string name) =>
         {
             return ExecuteProtected(logger, () =>
@@ -54,7 +70,10 @@ internal static class ControlEndpoint
             operation.Summary = "Get one rule by name";
             return operation;
         });
+    }
 
+    private static void MapCreateRule(IEndpointRouteBuilder app, IHttpSimRuleStore ruleStore, ILogger logger, string responseFilesFolder)
+    {
         app.MapPost(Routes.RULES, ([FromBody] ConfigRule[] rules) =>
         {
             return ExecuteProtected(logger, () =>
@@ -70,7 +89,10 @@ internal static class ControlEndpoint
             operation.Summary = "Create rules";
             return operation;
         });
+    }
 
+    private static void MapDeleteAllRules(IEndpointRouteBuilder app, IHttpSimRuleStore ruleStore, ILogger logger)
+    {
         app.MapDelete(Routes.RULES, () =>
         {
             return ExecuteProtected(logger, () =>
@@ -86,7 +108,10 @@ internal static class ControlEndpoint
             operation.Summary = "Delete all the rules";
             return operation;
         });
+    }
 
+    private static void MapDeleteRule(IEndpointRouteBuilder app, IHttpSimRuleStore ruleStore, ILogger logger)
+    {
         app.MapDelete(Routes.RULE, ([FromRoute] string name) =>
         {
             return ExecuteProtected(logger, () =>
@@ -105,7 +130,10 @@ internal static class ControlEndpoint
             operation.Summary = "Delete one rule by name";
             return operation;
         });
+    }
 
+    private static void MapGetRuleHilts(IEndpointRouteBuilder app, IHttpSimRuleStore ruleStore, ILogger logger)
+    {
         app.MapGet(Routes.RULE_HITS, ([FromRoute] string name) =>
         {
             return ExecuteProtected(logger, () =>
@@ -124,7 +152,10 @@ internal static class ControlEndpoint
             operation.Summary = "Get the number of requests that matched a rule";
             return operation;
         });
+    }
 
+    private static void MapGetRuleRequests(IEndpointRouteBuilder app, IHttpSimRuleStore ruleStore, ILogger logger)
+    {
         app.MapGet(Routes.RULE_REQUESTS, ([FromRoute] string name) =>
         {
             return ExecuteProtected(logger, () =>
@@ -143,8 +174,6 @@ internal static class ControlEndpoint
             operation.Summary = "Get the requests that matched a rule";
             return operation;
         });
-
-        return app;
     }
 
     private static OperationResult ExecuteProtected(ILogger logger, Func<OperationResult> func)
