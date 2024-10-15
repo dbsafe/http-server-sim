@@ -87,6 +87,25 @@ internal static class ControlEndpoint
             return operation;
         });
 
+        app.MapDelete(Routes.RULE, ([FromRoute] string name) =>
+        {
+            return ExecuteProtected(logger, () =>
+            {
+                if (ruleStore.DeleteRule(name))
+                {
+                    return OperationResult.CreateSuccess();
+                }
+
+                return OperationResult.CreateFailure($"Rule with name '{name}' not found");
+            });
+        })
+        .Produces<OperationResult>()
+        .WithOpenApi(operation =>
+        {
+            operation.Summary = "Delete one rule by name";
+            return operation;
+        });
+
         app.MapGet(Routes.RULE_HITS, ([FromRoute] string name) =>
         {
             return ExecuteProtected(logger, () =>

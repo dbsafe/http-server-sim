@@ -11,4 +11,6 @@ public static class Routes
     public const string HITS = "/hits";
     public const string RULE_REQUESTS = $"{RULES}/{{name}}{REQUESTS}";
     public const string REQUESTS = "/requests";
+
+    public static string RuleByName(string name) => Routes.RULE.Replace("{name}", name);
 }
