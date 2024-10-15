@@ -5,7 +5,7 @@
 /// </summary>
 public interface IHttpSimRuleStore
 {
-    IHttpSimRuleManager CreateRule(string name);
+    void CreateRule(IHttpSimRule rule);
     IEnumerable<IHttpSimRule> GetRules();
     void Clear();
     bool DeleteRule(string name);

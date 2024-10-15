@@ -28,11 +28,12 @@ public static class RulesConfigHelper
                 continue;
             }
 
-            var ruleManager = ruleStore.CreateRule(configRule.Name)
+            var ruleManager = new HttpSimRuleBuilder(configRule.Name)
                 .When(BuildFuncFromRule(logger, configRule))
                 .ReturnHttpResponse(apiResponse)
                 .IntroduceDelay(configRule.Delay);
             ruleManager.Rule.Conditions = configRule.Conditions;
+            ruleStore.CreateRule(ruleManager.Rule);
         }
 
         logger.LogDebug(sb.ToString());

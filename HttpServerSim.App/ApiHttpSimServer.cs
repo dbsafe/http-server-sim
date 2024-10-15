@@ -216,8 +216,6 @@ public sealed class ApiHttpSimServer : IDisposable
         _controlApp?.StopAsync().GetAwaiter().GetResult();
     }
 
-    public IHttpSimRuleManager CreateRule(string name) => _ruleStore.CreateRule(name);
-
     private static bool TryLoadRulesConfig(AppConfig appConfig, ILogger logger, [NotNullWhen(true)] out RulesConfig? rulesConfig)
     {
         if (appConfig.Rules is null)
