@@ -40,6 +40,7 @@ public sealed class ApiHttpSimServer : IDisposable
     private static WebApplication CreateControlUrl(string[] args, AppConfig appConfig, HttpSimRuleStore ruleStore)
     {
         var controlApp = BuildHttpSimApplication(args, isControlEndpoint: true, useHttpLogging: appConfig.LogControlRequestAndResponse, appConfig.RequestBodyLogLimit, appConfig.ResponseBodyLogLimit);
+        SwaggerHelper.ConfigureSwagger(controlApp);
         controlApp.MapControlEndpoints(ruleStore, appConfig.ResponseFilesFolder!, controlApp.Logger);
 
         controlApp.Urls.Add(appConfig.ControlUrl!);
@@ -122,6 +123,7 @@ public sealed class ApiHttpSimServer : IDisposable
     {
         var builder = WebApplication.CreateBuilder(args);
         ConfigureHttpJsonOptionsForControlEndpoint(builder, isControlEndpoint);
+        ConfigureSwaggerForControlEndpoint(builder, isControlEndpoint);
 
         builder.Logging.ClearProviders();
         builder.Logging.AddConsole();
@@ -161,6 +163,14 @@ public sealed class ApiHttpSimServer : IDisposable
                 options.SerializerOptions.WriteIndented = true;
                 options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             });
+        }
+    }
+
+    private static void ConfigureSwaggerForControlEndpoint(WebApplicationBuilder builder, bool isControlEndpoint)
+    {
+        if (isControlEndpoint)
+        {
+            SwaggerHelper.ConfigureSwagger(builder);
         }
     }
 
