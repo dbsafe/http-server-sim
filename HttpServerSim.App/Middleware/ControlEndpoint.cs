@@ -25,6 +25,12 @@ internal static class ControlEndpoint
                 var rules = ruleStore.GetRules().ToArray();
                 return OperationResult.CreateSuccess(rules);
             });
+        })
+        .Produces<OperationResult<IHttpSimRule[]>>()
+        .WithOpenApi(operation =>
+        {
+            operation.Summary = "Get all the rules";
+            return operation;
         });
 
         app.MapGet(Routes.RULE, ([FromRoute] string name) =>
@@ -41,6 +47,12 @@ internal static class ControlEndpoint
                     return OperationResult.CreateSuccess(rule);
                 }
             });
+        })
+        .Produces<OperationResult<IHttpSimRule>>()
+        .WithOpenApi(operation =>
+        {
+            operation.Summary = "Get one rule by name";
+            return operation;
         });
 
         app.MapPost(Routes.RULES, ([FromBody] ConfigRule[] rules) =>
@@ -51,6 +63,12 @@ internal static class ControlEndpoint
                 logger.LogDebug($"Created rules '{string.Join(',', rules.Select(r => r.Name))}'");
                 return OperationResult.CreateSuccess();
             });
+        })
+        .Produces<OperationResult>()
+        .WithOpenApi(operation =>
+        {
+            operation.Summary = "Create rules";
+            return operation;
         });
 
         app.MapDelete(Routes.RULES, () =>
@@ -61,6 +79,12 @@ internal static class ControlEndpoint
                 logger.LogDebug("Rules deleted");
                 return OperationResult.CreateSuccess();
             });
+        })
+        .Produces<OperationResult>()
+        .WithOpenApi(operation =>
+        {
+            operation.Summary = "Delete all the rules";
+            return operation;
         });
 
         app.MapGet(Routes.RULE_HITS, ([FromRoute] string name) =>
@@ -74,6 +98,12 @@ internal static class ControlEndpoint
 
                 return OperationResult.CreateSuccess(rule.MatchCount);
             });
+        })
+        .Produces<OperationResult<int>>()
+        .WithOpenApi(operation =>
+        {
+            operation.Summary = "Get the number of requests that matched a rule";
+            return operation;
         });
 
         app.MapGet(Routes.RULE_REQUESTS, ([FromRoute] string name) =>
@@ -87,6 +117,12 @@ internal static class ControlEndpoint
 
                 return OperationResult.CreateSuccess(rule.Requests);
             });
+        })
+        .Produces<OperationResult<HttpSimRequest[]>>()
+        .WithOpenApi(operation =>
+        {
+            operation.Summary = "Get the requests that matched a rule";
+            return operation;
         });
 
         return app;
