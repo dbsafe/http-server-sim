@@ -89,15 +89,20 @@ internal static class ControlEndpoint
         .Produces<OperationResult>()
         .WithOpenApi(operation =>
         {
-            operation.Summary = "Create rules";
+            operation.Summary = "Create one or more rules";
             return operation;
         });
     }
 
     private static void MapUpdateRule(IEndpointRouteBuilder app, IHttpSimRuleStore ruleStore, ILogger logger, string responseFilesFolder)
     {
-        app.MapPut(Routes.RULE, ([FromBody] ConfigRule rule) =>
+        app.MapPut(Routes.RULE, ([FromRoute] string name, [FromBody] ConfigRule rule) =>
         {
+            if (name != rule.Name)
+            {
+                return OperationResult.CreateFailure($"Name mismatch.");
+            }
+
             return ExecuteProtected(logger, () =>
             {
                 var currentRule = ruleStore.GetRule(rule.Name);
@@ -114,7 +119,7 @@ internal static class ControlEndpoint
         .Produces<OperationResult>()
         .WithOpenApi(operation =>
         {
-            operation.Summary = "Create rules";
+            operation.Summary = "Update a rule";
             return operation;
         });
     }
@@ -133,7 +138,7 @@ internal static class ControlEndpoint
         .Produces<OperationResult>()
         .WithOpenApi(operation =>
         {
-            operation.Summary = "Delete all the rules";
+            operation.Summary = "Delete all rules";
             return operation;
         });
     }
@@ -178,7 +183,7 @@ internal static class ControlEndpoint
         .Produces<OperationResult<int>>()
         .WithOpenApi(operation =>
         {
-            operation.Summary = "Get the number of requests that matched a rule";
+            operation.Summary = "Get the number of received requests that matched a rule";
             return operation;
         });
     }
@@ -200,7 +205,7 @@ internal static class ControlEndpoint
         .Produces<OperationResult<HttpSimRequest[]>>()
         .WithOpenApi(operation =>
         {
-            operation.Summary = "Get the requests that matched a rule";
+            operation.Summary = "Get received requests that matched a rule";
             return operation;
         });
     }
