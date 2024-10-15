@@ -41,4 +41,12 @@ public class HttpSimRuleStore : IHttpSimRuleStore
             _rules.Clear();
         }
     }
+
+    public bool DeleteRule(string name)
+    {
+        lock (_lock)
+        {
+            return _rules.Remove(name);
+        }
+    }
 }

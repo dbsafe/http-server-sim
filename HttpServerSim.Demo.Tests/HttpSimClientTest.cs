@@ -271,6 +271,38 @@ public class HttpSimClientTest
         }
     }
 
+    [TestMethod]
+    public void Delete_GivenRuleExists_ShouldDeleteRuleAndReturnTrue()
+    {
+        CreateRules1And2();
+
+        _httpSimClient.DeleteRule("rule-1").Should().BeTrue();
+
+        _httpSimClient.RuleExists("rule-1").Should().BeFalse();
+        _httpSimClient.RuleExists("rule-2").Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void Delete_GivenRuleDoesNotExist_ShouldReturnFalse()
+    {
+        CreateRules1And2();
+
+        _httpSimClient.DeleteRule("rule-3").Should().BeFalse();
+
+        _httpSimClient.RuleExists("rule-1").Should().BeTrue();
+        _httpSimClient.RuleExists("rule-2").Should().BeTrue();
+    }
+
+    private void CreateRules1And2()
+    {
+        var rule1 = new ConfigRule { Name = "rule-1", Response = new HttpSimResponse() };
+        var rule2 = new ConfigRule { Name = "rule-2", Response = new HttpSimResponse() };
+        _httpSimClient.AddRules([rule1, rule2]);
+
+        _httpSimClient.RuleExists(rule1.Name).Should().BeTrue();
+        _httpSimClient.RuleExists(rule2.Name).Should().BeTrue();
+    }
+
     private static void AssertResponse(HttpSimResponse expected, HttpResponseMessage actual)
     {
         actual.Should().NotBeNull();

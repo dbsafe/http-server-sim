@@ -8,4 +8,5 @@ public interface IHttpSimRuleStore
     IHttpSimRuleManager CreateRule(string name);
     IEnumerable<IHttpSimRule> GetRules();
     void Clear();
+    bool DeleteRule(string name);
 }

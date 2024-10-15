@@ -44,6 +44,26 @@ public class HttpSimClient(string controlUrl)
         AddRules([rule]);
     }
 
+    public ConfigRule[] GetAllRules()
+    {
+        var response = _httpClient.GetAsync($"{_controlUrl}{Routes.RULES}").Result;
+        response.EnsureSuccessStatusCode();
+        var operationResult = EnsureOperationResultSuccess<OperationResult<ConfigRule[]>>(response);
+        operationResult.Data.Should().NotBeNull($"Rules returned are null");
+        return operationResult.Data!;
+    }
+
+    public bool RuleExists(string name) => GetAllRules().Any(r => r.Name == name);
+
+    public bool DeleteRule(string name)
+    {
+        var response = _httpClient.DeleteAsync($"{_controlUrl}{Routes.RuleByName(name)}").Result;
+        response.EnsureSuccessStatusCode();
+
+        var operationResult = GetOperationResult<OperationResult>(response);
+        return operationResult.Success;
+    }
+
     public void VerifyThatRuleWasUsed(string name, int times)
     {
         var ruleHits = GetRuleHits(name);
@@ -107,6 +127,9 @@ public class HttpSimClient(string controlUrl)
 
         return operationResult;
     }
+
+    private static TBody GetOperationResult<TBody>(HttpResponseMessage response)
+        where TBody : OperationResult => DeserializeBody<TBody>(response);
 
     private static TBody DeserializeBody<TBody>(HttpResponseMessage response)
     {
