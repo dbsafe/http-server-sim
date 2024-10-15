@@ -20,9 +20,12 @@ internal static class ControlEndpoint
 
         MapGetAllRules(app, ruleStore, logger);
         MapGetRule(app, ruleStore, logger);
+
         MapCreateRule(app, ruleStore, logger, responseFilesFolder);
         MapDeleteAllRules(app, ruleStore, logger);
         MapDeleteRule(app, ruleStore, logger);
+        MapUpdateRule(app, ruleStore, logger, responseFilesFolder);
+
         MapGetRuleHilts(app, ruleStore, logger);
         MapGetRuleRequests(app, ruleStore, logger);
 
@@ -78,8 +81,33 @@ internal static class ControlEndpoint
         {
             return ExecuteProtected(logger, () =>
             {
-                RulesConfigHelper.LoadRules(rules, responseFilesFolder, ruleStore, logger);
-                logger.LogDebug($"Created rules '{string.Join(',', rules.Select(r => r.Name))}'");
+                var createdRules = RulesConfigHelper.LoadRules(rules, responseFilesFolder, ruleStore, logger);
+                logger.LogDebug($"Created rules '{string.Join(',', createdRules.Select(r => r.Name))}'.");
+                return OperationResult.CreateSuccess();
+            });
+        })
+        .Produces<OperationResult>()
+        .WithOpenApi(operation =>
+        {
+            operation.Summary = "Create rules";
+            return operation;
+        });
+    }
+
+    private static void MapUpdateRule(IEndpointRouteBuilder app, IHttpSimRuleStore ruleStore, ILogger logger, string responseFilesFolder)
+    {
+        app.MapPut(Routes.RULE, ([FromBody] ConfigRule rule) =>
+        {
+            return ExecuteProtected(logger, () =>
+            {
+                var currentRule = ruleStore.GetRule(rule.Name);
+                if (currentRule is null)
+                {
+                    return OperationResult.CreateFailure($"Rule '{rule.Name}' not found.");
+                }
+
+                RulesConfigHelper.UpdateRule(rule, responseFilesFolder, ruleStore, logger);
+                logger.LogDebug($"Updated rule '{rule.Name}'");
                 return OperationResult.CreateSuccess();
             });
         })
@@ -118,6 +146,7 @@ internal static class ControlEndpoint
             {
                 if (ruleStore.DeleteRule(name))
                 {
+                    logger.LogDebug($"Deleted rule '{name}'");
                     return OperationResult.CreateSuccess();
                 }
 
