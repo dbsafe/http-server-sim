@@ -19,18 +19,16 @@ public class HttpSimRuleStore : IHttpSimRuleStore
         }
     }
 
-    public IHttpSimRuleManager CreateRule(string name)
+    public void CreateRule(IHttpSimRule rule)
     {
         lock (_lock)
         {
-            if (_rules.ContainsKey(name))
+            if (_rules.ContainsKey(rule.Name))
             {
                 throw new InvalidOperationException("A rule with the same name already exists");
             }
 
-            var ruleBuilder = new HttpSimRuleBuilder(name);
-            _rules.Add(name, ruleBuilder.Rule);
-            return ruleBuilder;
+            _rules.Add(rule.Name, rule);
         }
     }
 
