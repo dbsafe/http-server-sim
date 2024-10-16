@@ -13,7 +13,4 @@ public interface IHttpSimRule
 
     // Keep original conditions used to build the RuleEvaluationFunc
     public List<ConfigCondition>? Conditions { get; set; }
-
-    // TODO: Move to the rule manager
-    IList<HttpSimRequest> Requests { get; }
 }

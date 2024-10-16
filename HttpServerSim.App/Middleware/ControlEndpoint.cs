@@ -173,7 +173,6 @@ internal static class ControlEndpoint
             return ExecuteProtected(logger, () =>
             {
                 var hits = ruleStore.GetRuleHits(name);
-
                 if (hits is null)
                 {
                     return OperationResult.CreateFailure($"Rule '{name}' not found.");
@@ -196,12 +195,13 @@ internal static class ControlEndpoint
         {
             return ExecuteProtected(logger, () =>
             {
-                if (!TryGetRule(ruleStore, name, out IHttpSimRule? rule))
+                var requests = ruleStore.GetRequests(name);
+                if (requests is null)
                 {
                     return OperationResult.CreateFailure($"Rule '{name}' not found.");
                 }
 
-                return OperationResult.CreateSuccess(rule.Requests);
+                return OperationResult.CreateSuccess(requests);
             });
         })
         .Produces<OperationResult<HttpSimRequest[]>>()
@@ -223,11 +223,5 @@ internal static class ControlEndpoint
             logger.LogError(ex.ToString());
             return OperationResult.CreateFailure(ex.Message);
         }
-    }
-
-    private static bool TryGetRule(IHttpSimRuleStore ruleStore, string name, [MaybeNullWhen(false)] out IHttpSimRule rule)
-    {
-        rule = ruleStore.GetRules().FirstOrDefault(x => x.Name == name);
-        return rule is not null;
     }
 }

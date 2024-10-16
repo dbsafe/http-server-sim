@@ -10,7 +10,7 @@ public class HttpSimRuleStore : IHttpSimRuleStore
 {
     private readonly object _lock = new();
 
-    private readonly Dictionary<string, StoreRuleItemManager> _ruleManagers = [];
+    private readonly Dictionary<string, RuleManager> _ruleManagers = [];
 
     public IEnumerable<IHttpSimRule> GetRules()
     {
@@ -29,7 +29,7 @@ public class HttpSimRuleStore : IHttpSimRuleStore
                 throw new InvalidOperationException("A rule with the same name already exists");
             }
 
-            var ruleManager = new StoreRuleItemManager(rule, ruleEvaluationFunc);
+            var ruleManager = new RuleManager(rule, ruleEvaluationFunc);
             _ruleManagers.Add(rule.Name, ruleManager);
         }
     }
@@ -56,7 +56,7 @@ public class HttpSimRuleStore : IHttpSimRuleStore
         {
             if (_ruleManagers.ContainsKey(rule.Name))
             {
-                var ruleManager = new StoreRuleItemManager(rule, ruleEvaluationFunc);
+                var ruleManager = new RuleManager(rule, ruleEvaluationFunc);
                 _ruleManagers[rule.Name] = ruleManager;
                 return;
             }
@@ -69,7 +69,7 @@ public class HttpSimRuleStore : IHttpSimRuleStore
     {
         lock (_lock)
         {
-            return _ruleManagers.TryGetValue(name, out StoreRuleItemManager? ruleManager) ? ruleManager.Rule : null;
+            return _ruleManagers.TryGetValue(name, out RuleManager? ruleManager) ? ruleManager.Rule : null;
         }
     }
 
@@ -77,15 +77,23 @@ public class HttpSimRuleStore : IHttpSimRuleStore
     {
         lock (_lock)
         {
-            return _ruleManagers.TryGetValue(name, out StoreRuleItemManager? ruleManager) ? ruleManager.MatchCount : null;
+            return _ruleManagers.TryGetValue(name, out RuleManager? ruleManager) ? ruleManager.MatchCount : null;
         }
     }
 
-    public StoreRuleItemManager? Resolve(HttpSimRequest request)
+    public RuleManager? Resolve(HttpSimRequest request)
     {
         lock (_lock)
         {
             return _ruleManagers.Values.FirstOrDefault(m => m.RuleEvaluationFunc(request));
+        }
+    }
+
+    public HttpSimRequest[]? GetRequests(string name)
+    {
+        lock (_lock)
+        {
+            return _ruleManagers.TryGetValue(name, out RuleManager? ruleManager) ? [.. ruleManager.Requests] : null;
         }
     }
 }
