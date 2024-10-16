@@ -1,4 +1,5 @@
-﻿using HttpServerSim.Client.Models;
+﻿using HttpServerSim.App.Rules;
+using HttpServerSim.Client.Models;
 
 namespace HttpServerSim.App.Contracts;
 
@@ -7,5 +8,5 @@ namespace HttpServerSim.App.Contracts;
 /// </summary>
 public interface IHttpSimRuleResolver
 {
-    IHttpSimRule? Resolve(HttpSimRequest request);
+    StoreRuleItemManager? Resolve(HttpSimRequest request);
 }

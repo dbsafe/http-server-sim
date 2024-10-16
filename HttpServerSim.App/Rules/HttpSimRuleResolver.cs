@@ -4,16 +4,12 @@ using HttpServerSim.Client.Models;
 namespace HttpServerSim.App.Rules;
 
 /// <summary>
-/// Finds a rule that applies to a HTTP request
+/// Finds a rule manager that applies to a HTTP request
 /// </summary>
 /// <param name="ruleStore"></param>
 public class HttpSimRuleResolver(IHttpSimRuleStore ruleStore) : IHttpSimRuleResolver
 {
     private readonly IHttpSimRuleStore _ruleStore = ruleStore;
 
-    public IHttpSimRule? Resolve(HttpSimRequest request)
-    {
-        var rule = _ruleStore.GetRules().FirstOrDefault(r => r.RuleEvaluationFunc(request));
-        return rule ?? default;
-    }
+    public StoreRuleItemManager? Resolve(HttpSimRequest request) => _ruleStore.Resolve(request);
 }

@@ -61,9 +61,9 @@ internal static class HttpSimRuleResolver
             }
 
             var httpSimRequest = await MapRequestAsync(context.Request);
-            var httpSimRule = httpSimRuleResolver.Resolve(httpSimRequest);
+            var ruleManager = httpSimRuleResolver.Resolve(httpSimRequest);
 
-            if (httpSimRule == null)
+            if (ruleManager == null)
             {
                 logger.LogDebug("Rule matching request not found. Using the default response");
                 await SetHttpResponseAsync(context, defaultResponse.Response, logger, responseFilesFolder);
@@ -71,19 +71,20 @@ internal static class HttpSimRuleResolver
                 return;
             }
 
-            logger.LogDebug($"Rule matching request found. '{httpSimRule.Name}'");
-            httpSimRule.AddRequest(httpSimRequest);
+            var rule = ruleManager.Rule;
+            logger.LogDebug($"Rule matching request found. '{rule.Name}'");
+            ruleManager.AddRequest(httpSimRequest);
 
-            if (httpSimRule.Response == null)
+            if (rule.Response == null)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
             }
             else
             {
-                await SetHttpResponseAsync(context, httpSimRule.Response, logger, responseFilesFolder);
+                await SetHttpResponseAsync(context, rule.Response, logger, responseFilesFolder);
             }
 
-            await IntroduceDelayAsync(logger, httpSimRule.Delay);
+            await IntroduceDelayAsync(logger, rule.Delay);
         };
     }
 

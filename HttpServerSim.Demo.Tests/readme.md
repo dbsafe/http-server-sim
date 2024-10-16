@@ -2,6 +2,8 @@
 
 Tests for http-server-sim
 
+`http-server-sim` must be running.
+
 ### Testing against project HttpServerSim.App
 `HttpServerSim.App` must be running before the tests.
 Run `HttpServerSim.App` by using a launch profile with command line argument `--ControlUrl http://localhost:5001`
