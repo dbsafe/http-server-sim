@@ -9,8 +9,9 @@ public interface IHttpSimRule
 {
     string Name { get; }
     HttpSimResponse? Response { get; set; }
+    IList<HttpSimResponse> Responses { get; }
     DelayRange? Delay { get; set; }
 
     // Keep original conditions used to build the RuleEvaluationFunc
-    public List<ConfigCondition>? Conditions { get; set; }
+    List<ConfigCondition>? Conditions { get; set; }
 }

@@ -20,6 +20,7 @@ public class ConfigRule
     public string? Description { get; set; }
     public List<ConfigCondition> Conditions { get; set; } = [];
     public HttpSimResponse? Response { get; set; }
+    public List<HttpSimResponse> Responses { get; set; } = [];
     public DelayRange? Delay { get; set; }
 }
 

@@ -11,9 +11,8 @@ public class HttpSimRule(string name) : IHttpSimRule
 {
     public string Name { get; } = name;
     public HttpSimResponse? Response { get; set; }
+    public IList<HttpSimResponse> Responses { get; set; } = [];
     public DelayRange? Delay { get; set; }
-
-    public IList<HttpSimRequest> Requests { get; } = [];
 
     public List<ConfigCondition>? Conditions { get; set; }
 }

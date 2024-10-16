@@ -44,7 +44,7 @@ public static class RuleBuilderExtensionMethods
 
     public static RuleBuilder WithResponse(this RuleBuilder ruleBuilder, HttpSimResponse response)
     {
-        ruleBuilder.Rule.Response = response;
+        ruleBuilder.Rule.Responses.Add(response);
         return ruleBuilder;
     }
 

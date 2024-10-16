@@ -12,7 +12,7 @@ public static class RulesConfigHelper
     {
         if (configRules is null || !configRules.Any())
         {
-            logger.LogWarning("There is not rules to load.");
+            logger.LogWarning("There are not rules to load.");
             return [];
         }
 
@@ -40,60 +40,83 @@ public static class RulesConfigHelper
 
     private static bool ActionWithRule(ConfigRule configRule, string responseFilesFolder, ILogger logger, Action<IHttpSimRule, Func<HttpSimRequest, bool>> action)
     {
-        var apiResponse = BuildResponseFromRule(logger, configRule, responseFilesFolder);
-        if (apiResponse is null)
+        if (configRule.Response is not null && configRule.Responses.Count > 0)
+        {
+            logger.LogWarning($"Rule: {configRule.Name} - Only property '{nameof(configRule.Response)}' or '{nameof(configRule.Responses)}' can have responses but not both.");
+            return false;
+        }
+
+        if (configRule.Response is not null)
+        {
+            configRule.Responses.Add(configRule.Response);
+            configRule.Response = null;
+        }
+
+        if (!ValidateRuleResponses(logger, configRule.Responses, configRule.Name, responseFilesFolder))
         {
             return false;
         }
 
-        var httpSimRuleBuilder = CreateHttpSimRuleBuilder(configRule, logger, apiResponse);
+        var httpSimRuleBuilder = CreateHttpSimRuleBuilder(configRule, logger, configRule.Responses);
         action.Invoke(httpSimRuleBuilder.Rule, httpSimRuleBuilder.RuleEvaluationFunc);
         return true;
     }
 
-    private static IHttpSimRuleBuilder CreateHttpSimRuleBuilder(ConfigRule configRule, ILogger logger, HttpSimResponse apiResponse)
+    private static IHttpSimRuleBuilder CreateHttpSimRuleBuilder(ConfigRule configRule, ILogger logger, IList<HttpSimResponse> apiResponses)
     {
         var builder = new HttpSimRuleBuilder(configRule.Name)
-            .When(BuildFuncFromRule(logger, configRule))
-            .ReturnHttpResponse(apiResponse)
-            .IntroduceDelay(configRule.Delay);
+            .When(BuildFuncFromRule(logger, configRule));
+        
+        foreach (var response in apiResponses)
+        {
+            builder.ReturnHttpResponse(response);
+        }
+
+        builder.IntroduceDelay(configRule.Delay);
 
         builder.Rule.Conditions = configRule.Conditions;
         return builder;
     }
 
-    public static HttpSimResponse? BuildResponseFromRule(ILogger logger, ConfigRule configRule, string responseFilesFolder)
+    public static bool ValidateRuleResponses(ILogger logger, IList<HttpSimResponse> responses, string ruleName, string responseFilesFolder)
     {
-        if (configRule.Response is null)
+        if (responses.Count == 0)
         {
-            logger.LogWarning($"Rule: {configRule.Name} - Missing Response.");
-            return null;
+            logger.LogWarning($"Rule: {ruleName} - Missing Response.");
+            return false;
         }
 
-        if (configRule.Response.ContentValue is not null)
+        var areResponsesValid = true;
+        foreach (var response in responses)
         {
-            switch (configRule.Response.ContentValueType)
+            if (response.ContentValue is null)
+            {
+                continue;
+            }
+
+            switch (response.ContentValueType)
             {
                 case ContentValueType.Text:
                     break;
 
                 case ContentValueType.File:
-                    var path = Path.Combine(responseFilesFolder, configRule.Response.ContentValue);
+                    var path = Path.Combine(responseFilesFolder, response.ContentValue);
                     if (!File.Exists(path))
                     {
-                        logger.LogWarning($"Rule: {configRule.Name} - File '{path}' not found.");
-                        return null;
+                        logger.LogWarning($"Rule: {ruleName} - File '{path}' not found.");
+                        areResponsesValid = false;
                     }
 
                     break;
 
                 default:
-                    logger.LogWarning($"Rule: {configRule.Name} - Invalid ContentValueType '{configRule.Response.ContentValueType}'.");
-                    return null;
+                    logger.LogWarning($"Rule: {ruleName} - Invalid ContentValueType '{response.ContentValueType}'.");
+                    areResponsesValid = false;
+                    break;
             }
         }
 
-        return configRule.Response;
+        return areResponsesValid;
     }
 
     private static Func<HttpSimRequest, bool> BuildFuncFromRule(ILogger logger, ConfigRule configRule)

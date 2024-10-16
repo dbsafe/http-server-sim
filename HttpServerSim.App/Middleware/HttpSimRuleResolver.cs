@@ -75,15 +75,7 @@ internal static class HttpSimRuleResolver
             logger.LogDebug($"Rule matching request found. '{rule.Name}'");
             ruleManager.AddRequest(httpSimRequest);
 
-            if (rule.Response == null)
-            {
-                context.Response.StatusCode = (int)HttpStatusCode.OK;
-            }
-            else
-            {
-                await SetHttpResponseAsync(context, rule.Response, logger, responseFilesFolder);
-            }
-
+            await SetHttpResponseAsync(context, ruleManager.NextResponse(), logger, responseFilesFolder);
             await IntroduceDelayAsync(logger, rule.Delay);
         };
     }

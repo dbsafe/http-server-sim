@@ -44,7 +44,7 @@ public class HttpSimClientTest
     }
 
     [TestMethod]
-    public async Task WithResponse()
+    public async Task WithResponse_GivenOneResponse_ResponseShouldBeUsedMultipleTimes()
     {
         var headers = new KeyValuePair<string, string[]>[]
         {
@@ -62,8 +62,46 @@ public class HttpSimClientTest
         _httpSimClient.AddRule(rule);
 
         var actualHttpResponse = await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", employee);
-
         AssertResponse(apiResponse, actualHttpResponse);
+
+        actualHttpResponse = await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", employee);
+        AssertResponse(apiResponse, actualHttpResponse);
+    }
+
+    [TestMethod]
+    public async Task WithResponse_GivenTowResponses_ResponsesShouldBeUsedAlternating()
+    {
+        var headers = new KeyValuePair<string, string[]>[]
+        {
+            new("header-1", ["header-11", "header-12"])
+        };
+
+        var employee1 = new { Id = 1, Name = "name-1" };
+        var contentJson1 = JsonSerializer.Serialize(employee1);
+        var apiResponse1 = new HttpSimResponse { StatusCode = 200, ContentValue = contentJson1, ContentType = "application/json", Headers = headers };
+
+        var employee2 = new { Id = 2, Name = "name-2" };
+        var contentJson2 = JsonSerializer.Serialize(employee2);
+        var apiResponse2 = new HttpSimResponse { StatusCode = 200, ContentValue = contentJson2, ContentType = "application/json", Headers = headers };
+
+        var rule = RuleBuilder.CreateRule("create-employee")
+            .WithCondition(field: Field.Method, op: Operator.Equals, value: "POST")
+            .WithResponse(apiResponse1)
+            .WithResponse(apiResponse2)
+            .Rule;
+        _httpSimClient.AddRule(rule);
+
+        var actualHttpResponse = await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", employee1);
+        AssertResponse(apiResponse1, actualHttpResponse);
+
+        actualHttpResponse = await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", employee2);
+        AssertResponse(apiResponse2, actualHttpResponse);
+
+        actualHttpResponse = await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", employee1);
+        AssertResponse(apiResponse1, actualHttpResponse);
+
+        actualHttpResponse = await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", employee2);
+        AssertResponse(apiResponse2, actualHttpResponse);
     }
 
     [TestMethod]

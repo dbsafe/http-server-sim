@@ -89,24 +89,29 @@ public sealed class ApiHttpSimServer : IDisposable
 
     private static DefaultResponse BuildDefaultResponse(AppConfig appConfig, ILogger logger)
     {
+        var singleResponse = new HttpSimResponse
+        {
+            ContentType = appConfig.DefaultContentType,
+            ContentValue = appConfig.DefaultContentValue,
+            ContentValueType = ContentValueType.Text,
+            StatusCode = appConfig.DefaultStatusCode
+        };
+
         var configRule = new ConfigRule
         {
             Name = "default-response-builder",
-            Response = new HttpSimResponse
-            {
-                ContentType = appConfig.DefaultContentType,
-                ContentValue = appConfig.DefaultContentValue,
-                ContentValueType = ContentValueType.Text,
-                StatusCode = appConfig.DefaultStatusCode
-            }
+            Responses = [singleResponse]
         };
 
-        var response = RulesConfigHelper.BuildResponseFromRule(logger, configRule, string.Empty) ?? throw new InvalidOperationException($"{nameof(HttpSimResponse)} should not be null here.");
+        if (!RulesConfigHelper.ValidateRuleResponses(logger, configRule.Responses, configRule.Name, string.Empty))
+        {
+            throw new InvalidOperationException("Response should be valid.");
+        }
 
-        logger.LogDebug($"Default Response{Environment.NewLine}{JsonSerializer.Serialize(response)}");
+        logger.LogDebug($"Default Response{Environment.NewLine}{JsonSerializer.Serialize(singleResponse)}");
 
-        var defaultResponse = new DefaultResponse { Response = response };
-        
+        var defaultResponse = new DefaultResponse { Response = singleResponse };
+
         if (appConfig.DefaultDelayMin.HasValue || appConfig.DefaultDelayMax.HasValue)
         {
             defaultResponse.Delay = new DelayRange
