@@ -1,5 +1,6 @@
 ﻿using HttpServerSim.App.Contracts;
 using HttpServerSim.Client.Models;
+using System.Net;
 
 namespace HttpServerSim.App.Rules;
 
@@ -9,6 +10,8 @@ public class RuleManager
     private readonly object _requestLocker = new();
     private const int MAX_STORED_REQUESTS = 10;
     private readonly IList<HttpSimRequest> _requests = [];
+    private readonly CircularList<HttpSimResponse> _responses;
+    private static readonly IList<HttpSimResponse> _defaultResponses = [new() { StatusCode = (int)HttpStatusCode.OK }];
 
     public Func<HttpSimRequest, bool> RuleEvaluationFunc { get; }
     public IHttpSimRule Rule { get; }
@@ -17,6 +20,13 @@ public class RuleManager
     {
         Rule = rule;
         RuleEvaluationFunc = BuildRuleEvaluationFunc(ruleEvaluationFunc);
+        _responses = BuildCircularListOfResponses(rule);
+    }
+
+    private static CircularList<HttpSimResponse> BuildCircularListOfResponses(IHttpSimRule rule)
+    {
+        var responses = rule.Responses.Count == 0 ? _defaultResponses : rule.Responses;
+        return new CircularList<HttpSimResponse>([.. responses]);
     }
 
     private Func<HttpSimRequest, bool> BuildRuleEvaluationFunc(Func<HttpSimRequest, bool> ruleEvaluationFunc)
@@ -49,8 +59,8 @@ public class RuleManager
 
     public void IncMatchCount() => Interlocked.Increment(ref _matchCount);
 
-    public IList<HttpSimRequest> Requests 
-    { 
+    public IList<HttpSimRequest> Requests
+    {
         get
         {
             lock (_requestLocker)
@@ -59,4 +69,6 @@ public class RuleManager
             }
         }
     }
+
+    public HttpSimResponse NextResponse() => _responses.Next();
 }

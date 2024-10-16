@@ -25,8 +25,7 @@ public class HttpSimRuleBuilder(string name) : IHttpSimRuleBuilder
 
     public IHttpSimRuleBuilder ReturnHttpResponse(HttpSimResponse response)
     {
-        EnsureResponseIsNotSet();
-        Rule.Response = response;
+        Rule.Responses.Add(response);
         return this;
     }
 
@@ -39,14 +38,6 @@ public class HttpSimRuleBuilder(string name) : IHttpSimRuleBuilder
 
         RuleEvaluationFunc = ruleEvaluationFunc;
         return this;
-    }
-
-    private void EnsureResponseIsNotSet()
-    {
-        if (Rule.Response != null)
-        {
-            throw new InvalidOperationException($"{nameof(Rule.Response)} cannot be set more than once");
-        }
     }
 
     private void EnsureDelayIsNotSet()

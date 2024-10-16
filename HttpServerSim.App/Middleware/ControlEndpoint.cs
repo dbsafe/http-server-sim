@@ -5,7 +5,6 @@ using HttpServerSim.App.Rules;
 using HttpServerSim.Client;
 using HttpServerSim.Client.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics.CodeAnalysis;
 
 namespace HttpServerSim.App.Middleware;
 
@@ -38,7 +37,7 @@ internal static class ControlEndpoint
         {
             return ExecuteProtected(logger, () =>
             {
-                var rules = ruleStore.GetRules().ToArray();
+                var rules = ruleStore.GetRules().Select(MapToOriginalContract).ToArray();
                 return OperationResult.CreateSuccess(rules);
             });
         })
@@ -63,7 +62,7 @@ internal static class ControlEndpoint
                 }
                 else
                 {
-                    return OperationResult.CreateSuccess(rule);
+                    return OperationResult.CreateSuccess(MapToOriginalContract(rule));
                 }
             });
         })
@@ -83,6 +82,14 @@ internal static class ControlEndpoint
             {
                 var createdRules = RulesConfigHelper.LoadRules(rules, responseFilesFolder, ruleStore, logger);
                 logger.LogDebug($"Created rules '{string.Join(',', createdRules.Select(r => r.Name))}'.");
+                
+                if (createdRules.Count() != rules.Length)
+                {
+                    var message = $"Not all the rules were created {createdRules.Count()}/{rules.Length}.";
+                    logger.LogWarning(message);
+                    return OperationResult.CreateFailure(message);
+                }
+                
                 return OperationResult.CreateSuccess();
             });
         })
@@ -223,5 +230,38 @@ internal static class ControlEndpoint
             logger.LogError(ex.ToString());
             return OperationResult.CreateFailure(ex.Message);
         }
+    }
+
+    // The original contract did not have IHttpSimRule.Responses.
+    // To work as before (one Response), when Responses as only one item set IHttpSimRule.Response with that item and leave IHttpSimRule.Responses null.
+    private static HttpSimRuleDTO MapToOriginalContract(IHttpSimRule rule)
+    {
+        var result = new HttpSimRuleDTO
+        {
+            Name = rule.Name,
+            Conditions = rule.Conditions,
+            Delay = rule.Delay
+        };
+
+        if (rule.Responses?.Count == 1)
+        {
+            result.Response = rule.Responses[0];
+            result.Responses = null;
+        }
+        else
+        {
+            result.Responses = [.. rule.Responses];
+        }
+
+        return result;
+    }
+
+    private class HttpSimRuleDTO
+    {
+        public string? Name { get; set; }
+        public HttpSimResponse? Response { get; set; }
+        public IList<HttpSimResponse>? Responses { get; set; }
+        public DelayRange? Delay { get; set; }
+        public List<ConfigCondition>? Conditions { get; set; }
     }
 }
