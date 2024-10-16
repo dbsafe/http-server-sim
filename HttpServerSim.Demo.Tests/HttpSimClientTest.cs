@@ -60,11 +60,14 @@ public class HttpSimClientTest
             .WithResponse(apiResponse)
             .Rule;
         _httpSimClient.AddRule(rule);
+        _httpSimClient.GetRuleHits("create-employee").Should().Be(0);
 
         var actualHttpResponse = await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", employee);
+        _httpSimClient.GetRuleHits("create-employee").Should().Be(1);
         AssertResponse(apiResponse, actualHttpResponse);
 
         actualHttpResponse = await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", employee);
+        _httpSimClient.GetRuleHits("create-employee").Should().Be(2);
         AssertResponse(apiResponse, actualHttpResponse);
     }
 
@@ -90,17 +93,22 @@ public class HttpSimClientTest
             .WithResponse(apiResponse2)
             .Rule;
         _httpSimClient.AddRule(rule);
+        _httpSimClient.GetRuleHits("create-employee").Should().Be(0);
 
         var actualHttpResponse = await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", employee1);
+        _httpSimClient.GetRuleHits("create-employee").Should().Be(1);
         AssertResponse(apiResponse1, actualHttpResponse);
 
         actualHttpResponse = await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", employee2);
+        _httpSimClient.GetRuleHits("create-employee").Should().Be(2);
         AssertResponse(apiResponse2, actualHttpResponse);
 
         actualHttpResponse = await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", employee1);
+        _httpSimClient.GetRuleHits("create-employee").Should().Be(3);
         AssertResponse(apiResponse1, actualHttpResponse);
 
         actualHttpResponse = await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", employee2);
+        _httpSimClient.GetRuleHits("create-employee").Should().Be(4);
         AssertResponse(apiResponse2, actualHttpResponse);
     }
 

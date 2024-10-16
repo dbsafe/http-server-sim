@@ -124,7 +124,7 @@ public class HttpSimClient(string controlUrl)
         }
     }
 
-    private int GetRuleHits(string ruleName)
+    public int GetRuleHits(string ruleName)
     {
         var path = $"{Routes.RULES}/{ruleName}{Routes.HITS}";
         var response = _httpClient.GetAsync($"{_controlUrl}{path}").Result;
