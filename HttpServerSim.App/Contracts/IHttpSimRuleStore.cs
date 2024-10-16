@@ -15,5 +15,6 @@ public interface IHttpSimRuleStore
     void Clear();
     bool DeleteRule(string name);
     int? GetRuleHits(string name);
-    StoreRuleItemManager? Resolve(HttpSimRequest request);
+    HttpSimRequest[]? GetRequests(string name);
+    RuleManager? Resolve(HttpSimRequest request);
 }

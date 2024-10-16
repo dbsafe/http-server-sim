@@ -11,5 +11,5 @@ public class HttpSimRuleResolver(IHttpSimRuleStore ruleStore) : IHttpSimRuleReso
 {
     private readonly IHttpSimRuleStore _ruleStore = ruleStore;
 
-    public StoreRuleItemManager? Resolve(HttpSimRequest request) => _ruleStore.Resolve(request);
+    public RuleManager? Resolve(HttpSimRequest request) => _ruleStore.Resolve(request);
 }

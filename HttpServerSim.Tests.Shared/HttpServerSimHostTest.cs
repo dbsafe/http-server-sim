@@ -101,7 +101,7 @@ namespace HttpServerSim.Tests.Shared
 
         public Task<string> TryFindLogSection(string startToken, string endToken, TimeSpan? timeout = null)
         {
-            timeout = timeout ?? _defaulTimeout;
+            timeout ??= _defaulTimeout;
             return Task.Run(() =>
             {
                 var logs = new StringBuilder();

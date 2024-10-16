@@ -8,5 +8,5 @@ namespace HttpServerSim.App.Contracts;
 /// </summary>
 public interface IHttpSimRuleResolver
 {
-    StoreRuleItemManager? Resolve(HttpSimRequest request);
+    RuleManager? Resolve(HttpSimRequest request);
 }
