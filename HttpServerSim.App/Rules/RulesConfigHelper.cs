@@ -38,7 +38,7 @@ public static class RulesConfigHelper
     public static bool UpdateRule(ConfigRule configRule, string responseFilesFolder, IHttpSimRuleStore ruleStore, ILogger logger) =>
         ActionWithRule(configRule, responseFilesFolder, logger, ruleStore.UpdateRule);
 
-    private static bool ActionWithRule(ConfigRule configRule, string responseFilesFolder, ILogger logger, Action<IHttpSimRule> action)
+    private static bool ActionWithRule(ConfigRule configRule, string responseFilesFolder, ILogger logger, Action<IHttpSimRule, Func<HttpSimRequest, bool>> action)
     {
         var apiResponse = BuildResponseFromRule(logger, configRule, responseFilesFolder);
         if (apiResponse is null)
@@ -46,20 +46,20 @@ public static class RulesConfigHelper
             return false;
         }
 
-        var rule = MapToHttpSimRule(configRule, logger, apiResponse);
-        action.Invoke(rule);
+        var httpSimRuleBuilder = CreateHttpSimRuleBuilder(configRule, logger, apiResponse);
+        action.Invoke(httpSimRuleBuilder.Rule, httpSimRuleBuilder.RuleEvaluationFunc);
         return true;
     }
 
-    public static IHttpSimRule MapToHttpSimRule(ConfigRule configRule, ILogger logger, HttpSimResponse apiResponse)
+    private static IHttpSimRuleBuilder CreateHttpSimRuleBuilder(ConfigRule configRule, ILogger logger, HttpSimResponse apiResponse)
     {
-        var rule = new HttpSimRuleBuilder(configRule.Name)
-                .When(BuildFuncFromRule(logger, configRule))
-                .ReturnHttpResponse(apiResponse)
-                .IntroduceDelay(configRule.Delay)
-                .Rule;
-        rule.Conditions = configRule.Conditions;
-        return rule;
+        var builder = new HttpSimRuleBuilder(configRule.Name)
+            .When(BuildFuncFromRule(logger, configRule))
+            .ReturnHttpResponse(apiResponse)
+            .IntroduceDelay(configRule.Delay);
+
+        builder.Rule.Conditions = configRule.Conditions;
+        return builder;
     }
 
     public static HttpSimResponse? BuildResponseFromRule(ILogger logger, ConfigRule configRule, string responseFilesFolder)

@@ -26,7 +26,7 @@ internal static class ControlEndpoint
         MapDeleteRule(app, ruleStore, logger);
         MapUpdateRule(app, ruleStore, logger, responseFilesFolder);
 
-        MapGetRuleHilts(app, ruleStore, logger);
+        MapGetRuleHits(app, ruleStore, logger);
         MapGetRuleRequests(app, ruleStore, logger);
 
         return app;
@@ -166,18 +166,20 @@ internal static class ControlEndpoint
         });
     }
 
-    private static void MapGetRuleHilts(IEndpointRouteBuilder app, IHttpSimRuleStore ruleStore, ILogger logger)
+    private static void MapGetRuleHits(IEndpointRouteBuilder app, IHttpSimRuleStore ruleStore, ILogger logger)
     {
         app.MapGet(Routes.RULE_HITS, ([FromRoute] string name) =>
         {
             return ExecuteProtected(logger, () =>
             {
-                if (!TryGetRule(ruleStore, name, out IHttpSimRule? rule))
+                var hits = ruleStore.GetRuleHits(name);
+
+                if (hits is null)
                 {
                     return OperationResult.CreateFailure($"Rule '{name}' not found.");
                 }
 
-                return OperationResult.CreateSuccess(rule.MatchCount);
+                return OperationResult.CreateSuccess(hits);
             });
         })
         .Produces<OperationResult<int>>()

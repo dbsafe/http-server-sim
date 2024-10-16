@@ -8,42 +8,36 @@ namespace HttpServerSim.App.Rules;
 /// Supports creating rules in the server.
 /// </summary>
 /// <param name="name"></param>
-public class HttpSimRuleBuilder(string name) : IHttpSimRuleManager
+public class HttpSimRuleBuilder(string name) : IHttpSimRuleBuilder
 {
+    public static readonly Func<HttpSimRequest, bool> UnspecifiedRuleEvaluationFunc = _ => false;
+
     public IHttpSimRule Rule { get; } = new HttpSimRule(name);
 
-    public IHttpSimRuleManager IntroduceDelay(DelayRange? delay)
+    public Func<HttpSimRequest, bool> RuleEvaluationFunc { get; set; } = UnspecifiedRuleEvaluationFunc;
+
+    public IHttpSimRuleBuilder IntroduceDelay(DelayRange? delay)
     {
         EnsureDelayIsNotSet();
         Rule.Delay = delay;
         return this;
     }
 
-    public IHttpSimRuleManager ReturnHttpResponse(HttpSimResponse response)
+    public IHttpSimRuleBuilder ReturnHttpResponse(HttpSimResponse response)
     {
         EnsureResponseIsNotSet();
         Rule.Response = response;
         return this;
     }
 
-    public IHttpSimRuleManager When(Func<HttpSimRequest, bool> ruleEvaluationFunc)
+    public IHttpSimRuleBuilder When(Func<HttpSimRequest, bool> ruleEvaluationFunc)
     {
-        if (Rule.RuleEvaluationFunc != HttpSimRule.UnspecifiedRuleEvaluationFunc)
+        if (RuleEvaluationFunc != UnspecifiedRuleEvaluationFunc)
         {
             throw new InvalidOperationException($"{nameof(When)} cannot be set more than once");
         }
 
-        Rule.RuleEvaluationFunc = httpSimRequest =>
-        {
-            if (ruleEvaluationFunc(httpSimRequest))
-            {
-                Rule.IncMatchCount();
-                return true;
-            }
-
-            return false;
-        };
-
+        RuleEvaluationFunc = ruleEvaluationFunc;
         return this;
     }
 
