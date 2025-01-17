@@ -179,7 +179,10 @@ internal static class HttpSimRuleResolver
 
     private static async Task<HttpSimRequest> MapRequestAsync(HttpRequest request)
     {
-        var httpSimRequest = new HttpSimRequest(request.Method, request.Path);
+        var httpSimRequest = new HttpSimRequest(request.Method, request.Path)
+        {
+            Headers = MapHeaders(request.Headers)
+        };
 
         using var reader = new StreamReader(request.Body, leaveOpen: true);
         var body = await reader.ReadToEndAsync();
@@ -191,4 +194,17 @@ internal static class HttpSimRuleResolver
 
         return httpSimRequest;
     }
+
+    private static KeyValuePair<string, string[]>[] MapHeaders(IHeaderDictionary requestHeaders)
+    {
+        List<KeyValuePair<string, string[]>> headers = [];
+        foreach (var requestHeader in requestHeaders)
+        {
+            var values = requestHeader.Value.Select(a => a ?? string.Empty).ToArray();
+            var header = new KeyValuePair<string, string[]>(requestHeader.Key, values);
+            headers.Add(header);
+        }
+
+        return [.. headers];
+    }    
 }

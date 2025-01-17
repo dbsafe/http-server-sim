@@ -1,5 +1,6 @@
 ﻿// Ignore Spelling: Json Serializer
 
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -11,12 +12,14 @@ namespace HttpServerSim.Client.Models;
 /// </summary>
 /// <param name="method"></param>
 /// <param name="path"></param>
-public class HttpSimRequest(string method, string path) : HttpSimMessage
+public class HttpSimRequest(string method, string path)
 {
     private string? _jsonContent;
     private bool _jsonContentResolved;
     private readonly object _lock = new();
 
+    public string? ContentValue { get; set; }
+    public KeyValuePair<string, string[]>[]? Headers { get; set; }
     public string Method { get; } = method;
     public string Path { get; } = path;
 
