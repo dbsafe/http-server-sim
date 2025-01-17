@@ -89,11 +89,7 @@ public class HttpSimClient(string controlUrl)
 
     public void VerifyLastRequestBodyAsJson(string ruleName, string expectedBody)
     {
-        var path = $"{Routes.RULES}/{ruleName}{Routes.REQUESTS}";
-        var response = _httpClient.GetAsync($"{_controlUrl}{path}").Result;
-        response.EnsureSuccessStatusCode();
-        var operationResult = EnsureOperationResultSuccess<OperationResult<IEnumerable<HttpSimRequest>>>(response);
-        var lastRequest = operationResult.Data.LastOrDefault();
+        var lastRequest = GetRequestsByRule(ruleName).LastOrDefault();
         lastRequest.Should().NotBeNull("Request not found.");
 
         lastRequest.JsonContent.Should().NotBeNullOrEmpty("Request don't have a content.");
@@ -122,6 +118,15 @@ public class HttpSimClient(string controlUrl)
         {
             throw;
         }
+    }
+
+    public IEnumerable<HttpSimRequest> GetRequestsByRule(string ruleName)
+    {
+        var path = $"{Routes.RULES}/{ruleName}{Routes.REQUESTS}";
+        var response = _httpClient.GetAsync($"{_controlUrl}{path}").Result;
+        response.EnsureSuccessStatusCode();
+        var operationResult = EnsureOperationResultSuccess<OperationResult<HttpSimRequest[]>>(response);
+        return operationResult.Data ?? [];
     }
 
     public int GetRuleHits(string ruleName)

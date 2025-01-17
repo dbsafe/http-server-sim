@@ -29,6 +29,16 @@ public class HttpSimClientTest
     private static readonly ConfigRule rule1 = new() { Name = "rule-1", Response = new HttpSimResponse() };
     private static readonly ConfigRule rule2 = new() { Name = "rule-2", Response = new HttpSimResponse() };
 
+    // HttpClient automatically fills in the Host header using the request URI
+    // https://learn.microsoft.com/en-us/dotnet/core/extensions/httpclient-sni#host-header
+    private static readonly KeyValuePair<string, string[]> _hostHeader = new("Host", ["localhost:5000"]);
+
+    private static readonly string employee1Json = "{\"id\":1,\"name\":\"name-1\"}";
+    private static readonly KeyValuePair<string, string[]> _employee1JsonLengthHeader = new("Content-Length", [employee1Json.Length.ToString()]);
+
+    private static readonly string _contentTypeJson = "application/json; charset=utf-8";
+    private static readonly KeyValuePair<string, string[]> _contentTypeJsonHeader = new("Content-Type", [_contentTypeJson]);
+
     [TestInitialize]
     public void Initialize()
     {
@@ -247,7 +257,7 @@ public class HttpSimClientTest
             .Rule;
 
         var updateRule = RuleBuilder.CreateRule("update")
-            .WithCondition(field: Field.Method, op: Operator.Equals, value: "UPDATE")
+            .WithCondition(field: Field.Method, op: Operator.Equals, value: "PATCH")
             .ReturnWithStatusCode(200)
             .Rule;
 
@@ -290,7 +300,7 @@ public class HttpSimClientTest
         await _httpClient.PostAsJsonAsync($"{_simUrl}/employees", new { id = 1, name = "name-1" });
 
         var expected = "{\"id\": 1, \"name\": \"name-1\"}";
-        
+
         _httpSimClient.VerifyLastRequestBodyAsJson(postRule.Name, expected);
     }
 
@@ -318,6 +328,50 @@ public class HttpSimClientTest
         {
             Assert.IsTrue(ex.Message.StartsWith("Expected actualJson"));
         }
+    }
+
+    [TestMethod]
+    public async Task GetRequestsByRule_ShouldReturnRequestsThatMatchARule()
+    {
+        var getRule = RuleBuilder.CreateRule("get")
+            .WithCondition(field: Field.Method, op: Operator.Equals, value: "GET")
+            .ReturnWithStatusCode(200)
+            .Rule;
+
+        var deleteRule = RuleBuilder.CreateRule("delete")
+            .WithCondition(field: Field.Method, op: Operator.Equals, value: "DELETE")
+            .ReturnWithStatusCode(401)
+            .Rule;
+
+        var updateRule = RuleBuilder.CreateRule("update")
+            .WithCondition(field: Field.Method, op: Operator.Equals, value: "PATCH")
+            .ReturnWithStatusCode(200)
+            .Rule;
+
+        _httpSimClient.AddRules([getRule, deleteRule, updateRule]);
+
+        await _httpClient.GetAsync($"{_simUrl}/employees");
+        await _httpClient.PatchAsJsonAsync($"{_simUrl}/employees", new { id = 1, name = "name-1" });
+        await _httpClient.GetAsync($"{_simUrl}/employees");
+
+        IEnumerable<HttpSimRequest> expectedGetRequests =
+        [
+            new HttpSimRequest("GET", "/employees") { Headers = [ _hostHeader ] },
+            new HttpSimRequest("GET", "/employees") { Headers = [ _hostHeader ] },
+        ];
+        var actualGetRequests = _httpSimClient.GetRequestsByRule("get");
+        actualGetRequests.Should().BeEquivalentTo(expectedGetRequests);
+
+        IEnumerable<HttpSimRequest> expectedUpdateRequests =
+        [
+            new HttpSimRequest("PATCH", "/employees")
+            {
+                ContentValue = employee1Json,
+                Headers = [ _hostHeader, _employee1JsonLengthHeader, _contentTypeJsonHeader]
+            }
+        ];
+        var actualUpdateRequets = _httpSimClient.GetRequestsByRule("update");
+        actualUpdateRequets.Should().BeEquivalentTo(expectedUpdateRequests, options => options.Excluding(a => a.JsonContent));
     }
 
     [TestMethod]
@@ -429,10 +483,10 @@ public class HttpSimClientTest
             var actualKvpHeader = actualHeaders.FirstOrDefault(h => h.Key == expectedKvpHeader.Key);
             actualKvpHeader.Should().NotBeNull();
 
-                foreach (var expectedHeader in expectedKvpHeader.Value)
-                {
-                    actualKvpHeader.Value.Should().Contain(expectedHeader);
-                }
+            foreach (var expectedHeader in expectedKvpHeader.Value)
+            {
+                actualKvpHeader.Value.Should().Contain(expectedHeader);
+            }
         }
     }
 
