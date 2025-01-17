@@ -7,7 +7,7 @@
       },
       "dotnetRunMessages": true,
       //"commandLineArgs": "--Rules rules.json --ControlUrl http://localhost:5001 --LogControlRequestAndResponse false --LogRequestAndResponse true --Logging:LogLevel:HttpServerSim Information"
-      "commandLineArgs": "--ControlUrl http://localhost:5001 --DefaultContentType application/json --DefaultContentValue \"{\"name\":\"Juan\"}\" --SaveRequests http-server-sim-history --SaveResponses http-server-sim-history --LogRequestAndResponse true --Logging:LogLevel:HttpServerSim Debug --DefaultDelayMax 500"
+      "commandLineArgs": "--ControlUrl http://localhost:5001 --LogControlRequestAndResponse true --DefaultContentType application/json --DefaultContentValue \"{\"name\":\"Juan\"}\" --SaveRequests http-server-sim-history --SaveResponses http-server-sim-history --LogRequestAndResponse true --Logging:LogLevel:HttpServerSim Debug --DefaultDelayMax 500"
       //"commandLineArgs": "--ControlUrl http://localhost:5001 --DefaultContentType application/json --DefaultContentValue \"{\"name\":\"Juan\"}\" --SaveRequests c:\\temp\\http-server-sim-history --SaveResponses c:\\temp\\http-server-sim-history --LogRequestAndResponse false --Logging:LogLevel:HttpServerSim Debug"
       //"commandLineArgs": "--Logging:LogLevel:HttpServerSim Debug --Rules rules.json --ControlUrl http://localhost:5001",
       //"commandLineArgs": "--Help",
