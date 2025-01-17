@@ -23,16 +23,27 @@ public class LoggingHandler(string name, HttpMessageHandler innerHandler) : Dele
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        var correlationId = Guid.NewGuid().ToString();
         var sb = new StringBuilder();
-        sb.AppendLine("Request:");
-        sb.AppendLine(request.ToString());
+        sb.AppendLine($"Request: [CorrelationId: {correlationId}]");
+        var requestBeforeSent = request.ToString();
+        sb.AppendLine(requestBeforeSent);
         await LogContentAsync(request.Content, sb);
         Console.WriteLine($"{name}{Environment.NewLine}{sb}");
         sb.Clear();
 
         HttpResponseMessage response = await base.SendAsync(request, cancellationToken);
 
-        sb.AppendLine("Response:");
+        var requestAfterSent = request.ToString();
+        if (requestAfterSent != requestBeforeSent)
+        {
+            sb.AppendLine($"Request: [CorrelationId: {correlationId}]. Updated during sending.");
+            sb.AppendLine(requestAfterSent);
+            Console.WriteLine($"{name}{Environment.NewLine}{sb}");
+            sb.Clear();
+        }
+
+        sb.AppendLine($"Response: [CorrelationId: {correlationId}]");
         sb.AppendLine(response.ToString());
         await LogContentAsync(response.Content, sb);
         Console.WriteLine($"{name}{Environment.NewLine}{sb}");

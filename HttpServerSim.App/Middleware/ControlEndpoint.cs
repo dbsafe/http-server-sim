@@ -233,7 +233,7 @@ internal static class ControlEndpoint
     }
 
     // The original contract did not have IHttpSimRule.Responses.
-    // To work as before (one Response), when Responses as only one item set IHttpSimRule.Response with that item and leave IHttpSimRule.Responses null.
+    // To work as before (one Response), when Responses has only one item set IHttpSimRule.Response with that item and leave IHttpSimRule.Responses null.
     private static HttpSimRuleDTO MapToOriginalContract(IHttpSimRule rule)
     {
         var result = new HttpSimRuleDTO
