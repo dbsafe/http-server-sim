@@ -177,7 +177,7 @@ The following command-line options are available when starting **http-server-sim
 | --DefaultContentType `<value>`   | Content-Type used in the default response when no rule matches the request.                       |
 | --DefaultContentValue `<value>`  | Content used in the default response when no rule matches the request.                            |
 | --DefaultDelayMin `<value>`      | Delay in milliseconds before sending the default response when no rule matches the request. Default: `0`. |
-| --DefaultDelayMax `<value>`      | Maximum delay in milliseconds before sending the default response when no rule matches the request. When specified, the actual delay is a random value between `--DefaultDelayMin` and `--DefaultDelayMax`. |
+| --DefaultDelayMax `<value>`      | Maximum delay in milliseconds before sending the default response when no rule matches the request. |
 | --DefaultStatusCode `<value>`    | HTTP status code used in the default response when no rule matches the request. Default: `200`.  |
 | --Help                           | Prints the help.                                                                                  |
 | --LogControlRequestAndResponse   | Whether control requests and responses are logged. Default: `false`.                              |
@@ -187,7 +187,11 @@ The following command-line options are available when starting **http-server-sim
 | --Rules `<file-name> \| <path>`  | Rules file. This can be a file in the current directory or a full path to a file.                |
 | --SaveRequests `<directory>`     | The directory where request messages are saved.                                                   |
 | --SaveResponses `<directory>`    | The directory where response messages are saved.                                                  |
-| --Url `<url>`                    | URL used by the simulator for endpoint requests. Default: `http://localhost:5000`. `--Url` and `--ControlUrl` cannot use the same value. |
+| --Url `<url>`                    | URL used by the simulator for endpoint requests. Default: `http://localhost:5000`.               |
+
+When `--DefaultDelayMax` is specified, the actual delay is a random value between `--DefaultDelayMin` and `--DefaultDelayMax`.
+
+`--Url` and `--ControlUrl` cannot share the same value.
 
 ### Configuring application logs
 
