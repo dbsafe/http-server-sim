@@ -27,16 +27,16 @@ public class AppConfigLoader
         var sb = new StringBuilder();
         sb.AppendLine("Usage: http-server-sim [options...]");
 
-        sb.AppendLine($"{PadRight("--ControlUrl <url>")}URL for managing rules dynamically. Not required. Example: http://localhost:5001.");
+        sb.AppendLine($"{PadRight("--ControlUrl <url>")}URL for managing rules dynamically. Optional. Example: http://localhost:5001.");
 
-        sb.AppendLine($"{PadRight("--DefaultContentType <value>")}The Content-Type used in a response message when no rule matching the request is found.");
-        sb.AppendLine($"{PadRight("--DefaultContentValue <value>")}The Content used in a response message when no rule matching the request is found.");
+        sb.AppendLine($"{PadRight("--DefaultContentType <value>")}Content-Type used in the default response when no rule matches the request.");
+        sb.AppendLine($"{PadRight("--DefaultContentValue <value>")}Content used in the default response when no rule matches the request.");
 
-        sb.AppendLine($"{PadRight("--DefaultDelayMin <value>")}The delay (in milliseconds) before sending a default response message when no matching rule for the request is found. Default: 0.");
-        sb.AppendLine($"{PadRight("--DefaultDelayMax <value>")}The maximum delay (in milliseconds) before sending a default response message when no matching rule for the request is found.");
+        sb.AppendLine($"{PadRight("--DefaultDelayMin <value>")}Delay in milliseconds before sending the default response when no rule matches the request. Default: 0.");
+        sb.AppendLine($"{PadRight("--DefaultDelayMax <value>")}Maximum delay in milliseconds before sending the default response when no rule matches the request.");
         sb.AppendLine($"{PadRight("")}When --DefaultDelayMax is specified, the actual delay will be a random value between --DefaultDelayMin and --DefaultDelayMax.");
 
-        sb.AppendLine($"{PadRight("--DefaultStatusCode <value>")}The HTTP status code used in a response message when no rule matching the request is found. Default: 200.");
+        sb.AppendLine($"{PadRight("--DefaultStatusCode <value>")}HTTP status code used in the default response when no rule matches the request. Default: 200.");
 
         sb.AppendLine($"{PadRight("--Help")}Prints this help.");
 
@@ -46,12 +46,12 @@ public class AppConfigLoader
         sb.AppendLine($"{PadRight("--RequestBodyLogLimit <limit>")}Maximum request body size to log (in bytes). Default: 4096.");
         sb.AppendLine($"{PadRight("--ResponseBodyLogLimit <limit>")}Maximum response body size to log (in bytes). Default: 4096.");
 
-        sb.AppendLine($"{PadRight("--Rules <file-name> | <path>")}Rules file. It can be a file name of a file that exists in the current directory or a full path to a file.");
+        sb.AppendLine($"{PadRight("--Rules <file-name> | <path>")}Rules file. This can be a file in the current directory or a full path to a file.");
 
         sb.AppendLine($"{PadRight("--SaveRequests <directory>")}The directory where request messages are saved.");
         sb.AppendLine($"{PadRight("--SaveResponses <directory>")}The directory where response messages are saved.");
 
-        sb.AppendLine($"{PadRight("--Url <url>")}URL for simulating endpoints. Default: http://localhost:5000.");
+        sb.AppendLine($"{PadRight("--Url <url>")}URL used by the simulator for endpoint requests. Default: http://localhost:5000.");
 
         sb.AppendLine($"{PadRight("")}--Url and --ControlUrl cannot share the same value.");
 
