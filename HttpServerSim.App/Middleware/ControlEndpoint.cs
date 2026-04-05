@@ -250,7 +250,7 @@ internal static class ControlEndpoint
         }
         else
         {
-            result.Responses = [.. rule.Responses];
+            result.Responses = rule.Responses is null ? null : [.. rule.Responses];
         }
 
         return result;
