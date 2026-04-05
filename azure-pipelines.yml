@@ -69,11 +69,13 @@ steps:
   inputs:
     ArtifactName: '$(Build.BuildNumber)'
 
-- task: NuGetCommand@2
+- task: NuGetAuthenticate@1
+  condition: and(succeeded(), eq(variables._publishNugetPackages, 'true'))
+  displayName: 'Authenticate NuGet'
+
+- script: |
+    find "$(Build.ArtifactStagingDirectory)" -name "*.nupkg" ! -name "*.symbols.nupkg" -print0 | while IFS= read -r -d '' package; do
+      dotnet nuget push "$package" --source "http-server-sim" --skip-duplicate
+    done
   condition: and(succeeded(), eq(variables._publishNugetPackages, 'true'))
   displayName: 'Publish NuGet Packages'
-  inputs:
-    command: 'push'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-    nuGetFeedType: 'external'
-    publishFeedCredentials: 'http-server-sim'
