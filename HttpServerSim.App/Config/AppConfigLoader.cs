@@ -20,7 +20,7 @@ public class AppConfigLoader
             .ToDictionary(n => n) ?? [];
     }
 
-    public static void PrintHelp()
+    public static string GetHelpText()
     {
         static string PadRight(string source) => source.PadRight(35);
 
@@ -55,7 +55,12 @@ public class AppConfigLoader
 
         sb.AppendLine($"{PadRight("")}--Url and --ControlUrl cannot share the same value.");
 
-        Console.WriteLine(sb.ToString());
+        return sb.ToString();
+    }
+
+    public static void PrintHelp()
+    {
+        Console.WriteLine(GetHelpText());
     }
 
     public static bool TryLoadAppConfig(string[] args, bool isDebugMode, [NotNullWhen(true)] out AppConfig? appConfig)
@@ -184,4 +189,3 @@ public class AppConfigLoader
         appConfig.SaveRequests = NormalizeDirectory(appConfig.SaveRequests);
     }
 }
-
