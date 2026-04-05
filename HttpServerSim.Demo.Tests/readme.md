@@ -1,17 +1,25 @@
 # HttpServerSim.Demo.Tests
 
-Tests for http-server-sim
+This project contains demo tests for `http-server-sim`.
 
-`http-server-sim` must be running.
+The tests expect a simulator running at `http://localhost:5000` and a control endpoint available at `http://localhost:5001`.
 
-### Testing against project HttpServerSim.App
-`HttpServerSim.App` must be running before the tests.
-Run `HttpServerSim.App` by using a launch profile with command line argument `--ControlUrl http://localhost:5001`
+## Run tests against `HttpServerSim.App`
 
+Start `HttpServerSim.App` before running the tests.
 
-### Testing against http-server-sim installed as a dotnet tool
-`http-server-sim` must be already installed.
-Run `http-server-sim` in `\HttpServerSim.App`
+One option is to run the project directly by using a launch profile or command-line arguments that include:
+
+```bash
+--ControlUrl http://localhost:5001
+```
+
+## Run tests against `http-server-sim` installed as a .NET tool
+
+If `http-server-sim` is installed as a global .NET tool, you can start it manually before running the tests.
+
+Run `http-server-sim` from the `./HttpServerSim.App` directory:
+
 ```bash
 http-server-sim --ControlUrl http://localhost:5001
 ```

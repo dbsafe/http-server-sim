@@ -1,58 +1,120 @@
 # Development
 
-## Executing Tests
+This document describes common development tasks for working on `http-server-sim`.
 
-### Test running the app locally
+## Running tests locally
 
-Start `HttpServerSim.App` without debugger and execute the tests.
+### Run the app locally for manual testing
 
-### Test running the app in a container
+Start `HttpServerSim.App` without the debugger, then run the tests or exercise the simulator manually.
 
-This is the way used in the build.</p>
+### Run the automated test projects
 
-Build image:</p> `docker build -t http-server-sim-build -f Dockerfile .`</p>
-Build image with verbose output:</p> `docker build -t http-server-sim-build --progress=plain --no-cache -f Dockerfile .`</p>
+The repository contains multiple test projects. You can run them individually with `dotnet test`.
 
-Run container from image</p>
-	- interactive
-	`docker run -i -t http-server-sim-build`</p>
-	- interactive, remove when done
-	`docker run -i -t --rm http-server-sim-build`</p>
-	- override ENTRYPOINT with bash
-	`docker run -i -t --rm --entrypoint "/bin/bash" http-server-sim-build `</p>
-	- mapp ports</p>
-	`docker run -i -t --rm -p 5000:5000 -p 5001:5001 --entrypoint "/bin/bash" http-server-sim-build`</p>
-	`docker run -i -t --rm -p 5000:5000 -p 5001:5001 http-server-sim-build`</p>
+Examples:
 
-## Building a NuGet package
+```bash
+dotnet test ./HttpServerSim.App.Tests/HttpServerSim.App.Tests.csproj
+dotnet test ./HttpServerSim.App.RequestResponseLogger.Tests/HttpServerSim.App.RequestResponseLogger.Tests.csproj
+dotnet test ./HttpServerSim.App.Rules.Tests/HttpServerSim.App.Rules.Tests.csproj
+dotnet test ./HttpServerSim.App.StaticRules.Tests/HttpServerSim.App.StaticRules.Tests.csproj
+dotnet test ./HttpServerSim.App.CommandLineArgs.Tests/HttpServerSim.App.CommandLineArgs.Tests.csproj
+dotnet test ./HttpServerSim.Demo.Tests/HttpServerSim.Demo.Tests.csproj
+```
 
-Builds packages from all projects:</p>
-`dotnet pack --include-source --include-symbols --no-build`
+## Running the app in Docker
 
-Builds packages from all projects setting the version in the dll and in the package:</p>
-`dotnet pack --include-source --include-symbols -p:PackageVersion=0.12.0 -p:Version=0.12.0 --output C:\LocalNuget`
+The CI pipeline builds a Docker image and runs integration tests against a containerized instance of `HttpServerSim.App`.
 
-Builds one package for one project:</p>
-`dotnet pack .\HttpServerSim.App\HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.8.0 -p:Version=0.8.0 --output C:\LocalNuget`
-`dotnet pack .\HttpServerSim.App\HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.12.0 -p:Version=0.12.0 --output ./HttpServerSim.App/nupkg`
+### Build the image
 
-Using this for local test
-`dotnet build /warnaserror --configuration Release -p:Version=1.0.0.1 -p:PackageVersion=1.0.0.1 -p:PackageOutputPath=./nupkg`
+```bash
+docker build -t http-server-sim-build -f Dockerfile .
+```
 
-Read more here
-[Source Link](https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/sourcelink)
+Build with verbose output and without using the Docker cache:
 
+```bash
+docker build -t http-server-sim-build --progress=plain --no-cache -f Dockerfile .
+```
 
-### Install http-server-sim as global tool
+### Run a container from the image
 
-#### Install local build version
-`dotnet tool install -g --add-source ./HttpServerSim.App/nupkg http-server-sim --version 1.0.0.1`
+Run interactively:
 
+```bash
+docker run -i -t http-server-sim-build
+```
 
-### List installed dotnet tools
+Run interactively and remove the container when it exits:
 
-`dotnet tool list -g`
+```bash
+docker run -i -t --rm http-server-sim-build
+```
 
-### Remove http-server-sim
+Override the entrypoint with `bash`:
 
-`dotnet tool uninstall http-server-sim -g`
+```bash
+docker run -i -t --rm --entrypoint "/bin/bash" http-server-sim-build
+```
+
+Expose the simulator ports and open a shell:
+
+```bash
+docker run -i -t --rm -p 5000:5000 -p 5001:5001 --entrypoint "/bin/bash" http-server-sim-build
+```
+
+Expose the simulator ports and run the default entrypoint:
+
+```bash
+docker run -i -t --rm -p 5000:5000 -p 5001:5001 http-server-sim-build
+```
+
+## Building NuGet packages
+
+Build packages from all projects:
+
+```bash
+dotnet pack --include-source --include-symbols --no-build
+```
+
+Build packages from all projects and set the assembly version and package version:
+
+```bash
+dotnet pack --include-source --include-symbols -p:PackageVersion=0.12.0 -p:Version=0.12.0 --output ./nupkg
+```
+
+Build a package for `HttpServerSim.App` only:
+
+```bash
+dotnet pack ./HttpServerSim.App/HttpServerSim.App.csproj --include-source --include-symbols -p:PackageVersion=0.12.0 -p:Version=0.12.0 --output ./HttpServerSim.App/nupkg
+```
+
+Build a local release package for testing:
+
+```bash
+dotnet build /warnaserror --configuration Release -p:Version=1.0.0.1 -p:PackageVersion=1.0.0.1 -p:PackageOutputPath=./nupkg
+```
+
+For more information about package source metadata, see [Source Link](https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/sourcelink).
+
+## Installing a local build as a global tool
+
+Install a locally built package as a global .NET tool:
+
+```bash
+dotnet tool install -g --add-source ./HttpServerSim.App/nupkg http-server-sim --version 1.0.0.1
+```
+
+List installed global tools:
+
+```bash
+dotnet tool list -g
+```
+
+Remove the global tool:
+
+```bash
+dotnet tool uninstall http-server-sim -g
+```
