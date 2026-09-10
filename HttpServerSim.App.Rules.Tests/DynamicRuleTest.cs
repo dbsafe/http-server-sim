@@ -79,6 +79,14 @@ public class DynamicRuleTest
     }
 
     [TestMethod]
+    public async Task Given_QueryString_equals_condition_with_plain_datetime_Should_match_request_query_string()
+    {
+        var rule = CreateQueryStringRule("query-string-equals-plain-datetime", Operator.Equals, "from=2026-07-22T15:45:00-04:00", 208);
+
+        await AssertRequestStatusCodeAsync(rule, "query-string-equals-plain-datetime?from=2026-07-22T15:45:00-04:00", 208);
+    }
+
+    [TestMethod]
     public async Task Given_QueryString_start_with_condition_Should_match_request_query_string()
     {
         var rule = CreateQueryStringRule("query-string-starts-with", Operator.StartWith, "from=2026-07-22", 205);
