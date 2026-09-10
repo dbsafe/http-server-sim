@@ -69,15 +69,11 @@ steps:
   inputs:
     ArtifactName: '$(Build.BuildNumber)'
 
-- task: NuGetAuthenticate@1
-  condition: and(succeeded(), eq(variables._publishNugetPackages, 'true'))
-  displayName: 'Authenticate NuGet'
-  inputs:
-    nuGetServiceConnections: 'http-server-sim'
-
 - script: |
     find "$(Build.ArtifactStagingDirectory)" -name "*.nupkg" ! -name "*.symbols.nupkg" -print0 | while IFS= read -r -d '' package; do
-      dotnet nuget push "$package" --source "http-server-sim" --skip-duplicate
+      dotnet nuget push "$package" --api-key "$NUGET_API_KEY" --source "https://api.nuget.org/v3/index.json" --skip-duplicate
     done
   condition: and(succeeded(), eq(variables._publishNugetPackages, 'true'))
   displayName: 'Publish NuGet Packages'
+  env:
+    NUGET_API_KEY: $(NuGetApiKey)
