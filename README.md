@@ -237,10 +237,19 @@ A rule with these conditions is applied when:
 - The request method is `POST`, **and**
 - The URL path contains `/customers`.
 
-The supported condition fields are `Method` and `Path`:
+The supported condition fields are `Method`, `Path`, and `QueryString`:
 
 1. `Method`: matches the HTTP method, such as `GET` or `POST`.
 2. `Path`: matches the request URL path.
+3. `QueryString`: matches the raw request query string without the leading `?`. Values remain URL-encoded. For example:
+
+```json
+{
+  "field": "QueryString",
+  "operator": "Contains",
+  "value": "from=2026-07-22%2015%3A15%3A00%20-04%3A00"
+}
+```
 
 The supported operators are `Equals`, `StartWith`, and `Contains`.
 

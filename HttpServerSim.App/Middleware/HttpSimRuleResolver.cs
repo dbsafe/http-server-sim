@@ -179,7 +179,10 @@ internal static class HttpSimRuleResolver
 
     private static async Task<HttpSimRequest> MapRequestAsync(HttpRequest request)
     {
-        var httpSimRequest = new HttpSimRequest(request.Method, request.Path)
+        var queryString = request.QueryString.Value;
+        var queryStringWithoutLeadingQuestionMark = string.IsNullOrEmpty(queryString) ? string.Empty : queryString[1..];
+
+        var httpSimRequest = new HttpSimRequest(request.Method, request.Path, queryStringWithoutLeadingQuestionMark)
         {
             Headers = MapHeaders(request.Headers)
         };

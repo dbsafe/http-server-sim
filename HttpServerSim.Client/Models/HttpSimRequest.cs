@@ -12,7 +12,8 @@ namespace HttpServerSim.Client.Models;
 /// </summary>
 /// <param name="method"></param>
 /// <param name="path"></param>
-public class HttpSimRequest(string method, string path)
+/// <param name="queryString">The raw query string, without the leading question mark.</param>
+public class HttpSimRequest(string method, string path, string queryString = "")
 {
     private string? _jsonContent;
     private bool _jsonContentResolved;
@@ -22,6 +23,7 @@ public class HttpSimRequest(string method, string path)
     public KeyValuePair<string, string[]>[]? Headers { get; set; }
     public string Method { get; } = method;
     public string Path { get; } = path;
+    public string QueryString { get; } = queryString;
 
     [JsonIgnore]
     public string? JsonContent
