@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
@@ -36,20 +37,36 @@ namespace HttpServerSim.Tests.Shared
             _testHost.LogReceived += TestHost_LogReceived;
         }
 
-        public void Start(bool waitForServiceToBeReady = true)
+        public void Start(bool waitForServiceToBeReady = true, params string[] additionalListeningUrls)
         {
             _testHost.Start();
 
-            if (waitForServiceToBeReady && !WaitForLog($"Now listening on: {SimulatorUrl}"))
+            if (!waitForServiceToBeReady)
             {
+                return;
+            }
+
+            var listeningUrls = new[] { SimulatorUrl }.Concat(additionalListeningUrls);
+            foreach (var listeningUrl in listeningUrls)
+            {
+                if (WaitForLog($"Now listening on: {listeningUrl}"))
+                {
+                    continue;
+                }
+
                 // Need to stop the host from here because the test may not have the chance to do it
                 _testHost.Stop();
-                throw new InvalidOperationException("Service was not ready");
+                throw new InvalidOperationException($"Service was not ready at '{listeningUrl}'");
             }
         }
 
         private bool WaitForLog(string token, TimeSpan? timeout = null)
         {
+            if (_logsQueue.Any(log => log.Contains(token)))
+            {
+                return true;
+            }
+
             timeout ??= _defaulTimeout;
             _logsQueue.Enqueue($"Waiting for log '{token}' for {timeout.Value.TotalMilliseconds} Milliseconds");
             var task = TryFindLog(token, timeout.Value);

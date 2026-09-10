@@ -28,7 +28,7 @@ public static class AppInitializer
     {
         var args = $"--DefaultStatusCode 404 --Logging:LogLevel:HttpServerSim Debug --Url {TEST_SIM_URL} --ControlUrl {TEST_SIM_CONTROL_URL}";
         TestHost = new HttpServerSimHostTest(testContext, args, TEST_SIM_URL);
-        TestHost.Start();
+        TestHost.Start(additionalListeningUrls: TEST_SIM_CONTROL_URL);
     }
 
     [AssemblyCleanup]
