@@ -72,6 +72,8 @@ steps:
 - task: NuGetAuthenticate@1
   condition: and(succeeded(), eq(variables._publishNugetPackages, 'true'))
   displayName: 'Authenticate NuGet'
+  inputs:
+    nuGetServiceConnections: 'http-server-sim'
 
 - script: |
     find "$(Build.ArtifactStagingDirectory)" -name "*.nupkg" ! -name "*.symbols.nupkg" -print0 | while IFS= read -r -d '' package; do
