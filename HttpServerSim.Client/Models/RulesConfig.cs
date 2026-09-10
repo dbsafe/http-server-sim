@@ -45,7 +45,8 @@ public class ConfigCondition
 public enum Field
 {
     Method,
-    Path
+    Path,
+    QueryString
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]

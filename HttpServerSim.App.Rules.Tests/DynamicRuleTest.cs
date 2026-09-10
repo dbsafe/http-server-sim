@@ -70,6 +70,38 @@ public class DynamicRuleTest
         Assert.IsTrue(elapsedMilliseconds < 2100);
     }
 
+    [TestMethod]
+    public async Task Given_QueryString_equals_condition_Should_match_request_query_string_without_leading_question_mark()
+    {
+        var rule = CreateQueryStringRule("query-string-equals", Operator.Equals, "from=2026-07-22%2015%3A15%3A00%20-04%3A00", 204);
+
+        await AssertRequestStatusCodeAsync(rule, "query-string-equals?from=2026-07-22%2015%3A15%3A00%20-04%3A00", 204);
+    }
+
+    [TestMethod]
+    public async Task Given_QueryString_start_with_condition_Should_match_request_query_string()
+    {
+        var rule = CreateQueryStringRule("query-string-starts-with", Operator.StartWith, "from=2026-07-22", 205);
+
+        await AssertRequestStatusCodeAsync(rule, "query-string-starts-with?from=2026-07-22&to=2026-07-23", 205);
+    }
+
+    [TestMethod]
+    public async Task Given_QueryString_contains_condition_Should_match_request_query_string()
+    {
+        var rule = CreateQueryStringRule("query-string-contains", Operator.Contains, "to=2026-07-23", 206);
+
+        await AssertRequestStatusCodeAsync(rule, "query-string-contains?from=2026-07-22&to=2026-07-23", 206);
+    }
+
+    [TestMethod]
+    public async Task Given_Request_has_no_query_string_Should_not_match_query_string_condition()
+    {
+        var rule = CreateQueryStringRule("query-string-absent", Operator.Contains, "from=2026-07-22", 207);
+
+        await AssertRequestStatusCodeAsync(rule, "query-string-absent", 404);
+    }
+
     private async Task<long> TimeRequestAsync(ConfigRule rule, string path, int expectedStatusCode)
     {
         _httpSimClient.AddRule(rule);
@@ -80,5 +112,21 @@ public class DynamicRuleTest
         Assert.AreEqual(expectedStatusCode, (int)actualHttpResponse.StatusCode);
 
         return sw.ElapsedMilliseconds;
+    }
+
+    private static ConfigRule CreateQueryStringRule(string name, Operator @operator, string value, int statusCode) =>
+        RuleBuilder.CreateRule(name)
+            .WithCondition(field: Field.Path, op: Operator.Contains, value: name)
+            .WithCondition(field: Field.QueryString, op: @operator, value: value)
+            .ReturnWithStatusCode(statusCode)
+            .Rule;
+
+    private async Task AssertRequestStatusCodeAsync(ConfigRule rule, string pathAndQuery, int expectedStatusCode)
+    {
+        _httpSimClient.AddRule(rule);
+
+        var response = await _httpClient.GetAsync($"{AppInitializer.TEST_SIM_URL}/{pathAndQuery}");
+
+        Assert.AreEqual(expectedStatusCode, (int)response.StatusCode);
     }
 }

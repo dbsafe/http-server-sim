@@ -173,6 +173,9 @@ public static class RulesConfigHelper
             case Field.Path:
                 return BuildFuncFromOperator(logger, configCondition.Operator, ruleName, (httpSimRequest) => httpSimRequest.Path, configCondition.Field, configCondition.Value);
 
+            case Field.QueryString:
+                return BuildFuncFromOperator(logger, configCondition.Operator, ruleName, (httpSimRequest) => httpSimRequest.QueryString, configCondition.Field, configCondition.Value);
+
             default:
                 logger.LogWarning($"Rule: {ruleName} - Invalid Field '{configCondition.Field}'.");
                 return (htpSimRequest) => false;
