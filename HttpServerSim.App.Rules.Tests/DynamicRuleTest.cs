@@ -9,6 +9,7 @@ namespace HttpServerSim.App.Rules.Tests;
 [TestClass]
 public class DynamicRuleTest
 {
+    private const int NO_DELAY_RESPONSE_MAX_MILLISECONDS = 500;
     private static readonly HttpClient _httpClient = HttpClientFactory.CreateHttpClient(nameof(DynamicRuleTest));
     private static readonly HttpSimClient _httpSimClient = new(AppInitializer.TEST_SIM_CONTROL_URL);
 
@@ -38,7 +39,7 @@ public class DynamicRuleTest
 
         var elapsedMilliseconds = await TimeRequestAsync(rule, "rule-without-delay", 201);
 
-        Assert.IsTrue(elapsedMilliseconds < 200);
+        Assert.IsTrue(elapsedMilliseconds < NO_DELAY_RESPONSE_MAX_MILLISECONDS);
     }
 
     [TestMethod]

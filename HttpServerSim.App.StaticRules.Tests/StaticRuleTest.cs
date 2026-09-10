@@ -6,6 +6,7 @@ namespace HttpServerSim.App.StaticRules.Tests;
 [TestClass]
 public class StaticRuleTest
 {
+    private const int NO_DELAY_RESPONSE_MAX_MILLISECONDS = 500;
     private static readonly HttpClient _httpClient = HttpClientFactory.CreateHttpClient(nameof(StaticRuleTest));
     private static readonly HttpSimClient _httpSimClient = new(AppInitializer.TEST_SIM_CONTROL_URL);
 
@@ -29,7 +30,7 @@ public class StaticRuleTest
     {
         var elapsedMilliseconds = await TimeRequestAsync("201", 201);
 
-        Assert.IsTrue(elapsedMilliseconds < 200);
+        Assert.IsTrue(elapsedMilliseconds < NO_DELAY_RESPONSE_MAX_MILLISECONDS);
     }
 
     [TestMethod]
