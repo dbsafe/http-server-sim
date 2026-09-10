@@ -241,13 +241,13 @@ The supported condition fields are `Method`, `Path`, and `QueryString`:
 
 1. `Method`: matches the HTTP method, such as `GET` or `POST`.
 2. `Path`: matches the request URL path.
-3. `QueryString`: matches the raw request query string without the leading `?`. Values remain URL-encoded. For example:
+3. `QueryString`: matches the URL-decoded request query string without the leading `?`, so conditions can use readable values even when clients percent-encode the request. For example:
 
 ```json
 {
   "field": "QueryString",
   "operator": "Contains",
-  "value": "from=2026-07-22%2015%3A15%3A00%20-04%3A00"
+  "value": "from=2026-07-22T15:45:00-04:00"
 }
 ```
 
