@@ -71,9 +71,9 @@ public class DynamicRuleTest
     }
 
     [TestMethod]
-    public async Task Given_QueryString_equals_condition_Should_match_request_query_string_without_leading_question_mark()
+    public async Task Given_QueryString_equals_condition_Should_match_url_encoded_request_query_string()
     {
-        var rule = CreateQueryStringRule("query-string-equals", Operator.Equals, "from=2026-07-22%2015%3A15%3A00%20-04%3A00", 204);
+        var rule = CreateQueryStringRule("query-string-equals", Operator.Equals, "from=2026-07-22 15:15:00 -04:00", 204);
 
         await AssertRequestStatusCodeAsync(rule, "query-string-equals?from=2026-07-22%2015%3A15%3A00%20-04%3A00", 204);
     }
@@ -84,6 +84,14 @@ public class DynamicRuleTest
         var rule = CreateQueryStringRule("query-string-equals-plain-datetime", Operator.Equals, "from=2026-07-22T15:45:00-04:00", 208);
 
         await AssertRequestStatusCodeAsync(rule, "query-string-equals-plain-datetime?from=2026-07-22T15:45:00-04:00", 208);
+    }
+
+    [TestMethod]
+    public async Task Given_QueryString_equals_condition_with_plain_datetime_Should_match_url_encoded_datetime()
+    {
+        var rule = CreateQueryStringRule("query-string-equals-encoded-datetime", Operator.Equals, "from=2026-07-22T15:45:00-04:00", 209);
+
+        await AssertRequestStatusCodeAsync(rule, "query-string-equals-encoded-datetime?from=2026-07-22T15%3A45%3A00-04%3A00", 209);
     }
 
     [TestMethod]
