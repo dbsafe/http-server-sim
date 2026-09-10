@@ -12,7 +12,7 @@ namespace HttpServerSim.Client.Models;
 /// </summary>
 /// <param name="method"></param>
 /// <param name="path"></param>
-/// <param name="queryString">The raw query string, without the leading question mark.</param>
+/// <param name="queryString">The URL-decoded query string, without the leading question mark.</param>
 public class HttpSimRequest(string method, string path, string queryString = "")
 {
     private string? _jsonContent;

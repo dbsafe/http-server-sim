@@ -181,8 +181,9 @@ internal static class HttpSimRuleResolver
     {
         var queryString = request.QueryString.Value;
         var queryStringWithoutLeadingQuestionMark = string.IsNullOrEmpty(queryString) ? string.Empty : queryString[1..];
+        var decodedQueryString = WebUtility.UrlDecode(queryStringWithoutLeadingQuestionMark);
 
-        var httpSimRequest = new HttpSimRequest(request.Method, request.Path, queryStringWithoutLeadingQuestionMark)
+        var httpSimRequest = new HttpSimRequest(request.Method, request.Path, decodedQueryString)
         {
             Headers = MapHeaders(request.Headers)
         };
